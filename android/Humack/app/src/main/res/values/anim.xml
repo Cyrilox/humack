@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <integer name="splashscreen_fadein">400</integer>
+    <integer name="splashscreen_minstay">1000</integer>
+    <integer name="splashscreen_fadeout">400</integer>
+
     <integer name="animation_speed_min">200</integer>
     <integer name="animation_speed_max">800</integer>
     <integer name="animation_speed_default">420</integer>

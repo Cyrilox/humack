@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -20,7 +21,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.universio.humack.data.DatabaseAO;
 import com.universio.humack.synergology.SynergologyActivity;
@@ -30,6 +34,9 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Stack;
 
+/**
+ * Created by Cyril Humbertclaude on 15/06/2015.
+ */
 public class MainActivity extends AppCompatActivity implements View.OnLayoutChangeListener, NavigationView.OnNavigationItemSelectedListener{
 
     //Statiques
@@ -40,6 +47,11 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     private static DatabaseAO databaseAO;
     private static Settings settings;
 
+    //Splashscreen
+    private SplashscreenFragment splashscreen;
+    private boolean splashscreenOn=false;
+    private long splashStayStartTime;
+
     //Barre d'action
     private Toolbar toolbar;
     private ActionBar actionBar;
@@ -49,8 +61,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     //Vue
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private Menu navigationViewMenu;
     private int layoutWidth, layoutHeight, frameWidth, frameHeight;
-    private FrameLayout activitiesFrame;
+    private FrameLayout activityMainLayout, splashscreenLayout, activitiesFrame;
     private FragmentManager fragmentManager;
 
     //Menu
@@ -71,7 +84,14 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Fragments
+        fragmentManager = getFragmentManager();
+        //Page de chargement
+        splashscreenLayout = (FrameLayout)findViewById(R.id.splashscreen_layout);
+        showSplashscreen();
+        //Initialisation
         init();
+        //Activité par défault
         drawerLayout.post(new Runnable() {
             @Override
             public void run() {
@@ -91,12 +111,16 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         databaseAO.createDatabase();
         settings = new Settings(getSharedPreferences("user_preferences", 0), getResources());
 
+        //Vues
+        activityMainLayout = (FrameLayout)findViewById(R.id.activity_main);
+
         //Navigation
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.addOnLayoutChangeListener(this);
         drawerOpen = false;
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationViewMenu = navigationView.getMenu();
         activitiesFrame = (FrameLayout)findViewById(R.id.activities_frame);
 
         //ActionBar & Drawer Handling
@@ -153,7 +177,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         activities = new HashMap<>();
         activitiesBackstack = new Stack<>();
         animationRunning = false;
-        fragmentManager = getFragmentManager();
     }
 
     @Override
@@ -220,6 +243,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                     public void onAnimationEnd(Animator animation) {
                         ViewCompat.setElevation(currentActivity.getView(), ELEVATION_ACTIVITY);
                         animationRunning = false;
+                        if(!splashscreenOn)
+                            currentActivity.onVisible();
                     }
                 });
 
@@ -246,6 +271,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                     hidePrevious.setDuration(0);
                     animations.play(translatePrevious);
                     animations.play(hidePrevious).after(translatePrevious);
+
+                    currentActivity.onHiding();
                 }
 
                 animations.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -258,10 +285,78 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 currentActivity = activity;
                 setActionBarHome();
                 invalidateOptionsMenu();
+                //Rustine
+                int currentActivityMenuId = (currentActivityId == ACTIVITY_SYNERGOLOGY_HELP)  ? ACTIVITY_SYNERGOLOGY : currentActivityId;
+                navigationViewMenu.findItem(currentActivityMenuId).setChecked(true);
 
                 activitiesBackstack.removeElement(activityId);
                 activitiesBackstack.push(activityId);
             }
+        }
+    }
+
+    private void showSplashscreen(){
+        if(!splashscreenOn) {
+            splashscreenOn = true;
+            //Création et ajout
+            splashscreen = new SplashscreenFragment();
+            fragmentManager.beginTransaction().add(R.id.splashscreen_layout, splashscreen).commit();
+
+            //Animation d'apparition
+            long fadeInTime = (long) getResources().getInteger(R.integer.splashscreen_fadein);
+            splashStayStartTime = System.currentTimeMillis() + fadeInTime;
+            View view = splashscreen.getView();
+            if (view != null) {
+                ImageView icon = (ImageView) view.findViewById(R.id.fragment_splashscreen_icon);
+                AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
+                fadeIn.setDuration(fadeInTime);
+                fadeIn.setFillAfter(true);
+                icon.startAnimation(fadeIn);
+            }
+        }
+    }
+
+    //The first ActivityFragment must call this method in order to close the splashscreen
+    public void closeSplashscreen(){
+        if(splashscreenOn) {
+            long stayTime, minStayTime, fadeOutDelay;
+            //Temps minimum visible
+            stayTime = System.currentTimeMillis() - splashStayStartTime;
+            minStayTime = (long) getResources().getInteger(R.integer.splashscreen_minstay);
+            fadeOutDelay = Math.max(0, minStayTime - stayTime)+100;
+
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    //Animation de disparition
+                    long fadeOutTime = (long) getResources().getInteger(R.integer.splashscreen_fadeout);
+                    View view = splashscreen.getView();
+                    if (view != null) {
+                        AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
+                        fadeOut.setDuration(fadeOutTime);
+                        fadeOut.setFillAfter(true);
+                        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                //Effacement du fragment
+                                fragmentManager.beginTransaction().remove(splashscreen).commit();
+                                fragmentManager.executePendingTransactions();
+                                splashscreen = null;
+                                splashscreenOn = false;
+                                currentActivity.onVisible();
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+                            }
+                        });
+                        view.startAnimation(fadeOut);
+                    }
+                }
+            }, fadeOutDelay);
         }
     }
 

@@ -1,7 +1,7 @@
 <resources>
     <!-- General -->
     <string name="app_name">Humack</string>
-    <string name="app_version">Version 0.0.2</string>
+    <string name="app_version">Version 0.1.0</string>
     <string name="app_icon_description">Icône de l\'application</string>
     <string name="app_description">Améliorez votre compréhension de l’être humain de façon simple, scientifique et technologique.&lt;br>&lt;br>Humack vise à réunir et interconnecté un ensemble de disciplines puissantes orientées sur la science de l’humain, tel que la synergologie, la morphopsychologie ou le profilage.&lt;br>&lt;br>Véritablement accessible aux plus néophytes, cette application vous fera découvrir des disciplines d’experts de façon intuitive.&lt;br>&lt;br>L’intérêt ? Booster vos relations, détecter des mensonges voir manipuler c’est à vous de décider, et tout cela furtivement !</string>
     <string name="databases_dir">/data/data/com.universio.humack/databases/</string>
@@ -31,7 +31,7 @@
 
     <!-- Activity Synergology Help -->
     <string name="title_activity_synergology_help">Synergologie</string>
-    <string name="synergology_help_quote">« L’art de rétablir la vérité des Hommes via le décodage de leurs attitudes »</string>
+    <string name="synergology_help_quote">« L’art de rétablir la vérité des Hommes via le décodage de leur attitude »</string>
     <string name="synergology_help_definition">&lt;b>Définition&lt;/b>&lt;br>La synergologie est une discipline qui vise à observer puis analyser l’attitude d’une personne afin de comprendre qu’elle est sont véritable état d’esprit, celui-ci étant poussé dans la société à mettre des filtres entre lui et son interlocuteur pour être plus efficace.</string>
     <string name="synergology_help_filter">&lt;b>Filtre&lt;/b>&lt;br>Comportement anormal de la personne, inconscient ou non, entraînant un mensonge ou silence permettant d’être plus efficace au quotidien.</string>
     <string name="synergology_help_antidote">&lt;b>L’antidote&lt;/b>&lt;br>La synergologie annule ces filtres en analysant le comportement inconscient de la personne, majoritairement ses micromouvements.</string>
@@ -63,6 +63,9 @@
     <!-- Activity About -->
     <string name="title_activity_about">A propos</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Tour guide -->
+    <string name="tourguide_synergology_1">|Guide> Cliquez sur une partie du corps</string>
+    <string name="tourguide_synergology_2">|Guide> Les attitudes relatives à cette partie sont visibles ci-dessus</string>
+    <string name="tourguide_synergology_3">|Guide> Pour découvrir à quoi cela sert, cliquez sur l\'aide en haut</string>
+
 </resources>

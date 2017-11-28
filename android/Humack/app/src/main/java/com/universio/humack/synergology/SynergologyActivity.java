@@ -8,6 +8,8 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,8 +62,12 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
     private Rect frameFullsize, frameSmallsize;
 
     //Animation
-    private AnimatorSet animations;
     private boolean animationRunning;
+    private AnimatorSet animations;
+
+    //Tour guide
+    private boolean synergologyGuide1, synergologyGuide2;
+    private Snackbar synergologyGuide1Snackbar, synergologyGuide3Snackbar;
 
     public static SynergologyActivity newInstance(){
         return new SynergologyActivity();
@@ -111,6 +117,16 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
 
         //Animation
         animationRunning = false;
+
+        //Tour guide
+        if(Settings.isSynergologyGuide()) {
+            synergologyGuide1 = true;
+            synergologyGuide2 = true;
+        }else{
+            synergologyGuide1 = false;
+            synergologyGuide2 = false;
+            Settings.setSynergologyGuide(true);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -134,6 +150,22 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         attitudeDAO.setForeignDatas(attitudeTypes, bodyparts, micromovements);
         attitudes = attitudeDAO.getAll(AttitudeDAO.COL_SUBORDER_NAME);
         databaseAO.close();
+    }
+
+    @Override
+    public void onVisible() {
+        //Guide 1 - Ouverture
+        if(!synergologyGuide1) {
+            synergologyGuide1Snackbar = Snackbar.make(synergologyLayout, R.string.tourguide_synergology_1, Snackbar.LENGTH_INDEFINITE);
+            synergologyGuide1Snackbar.show();
+        }
+    }
+
+    @Override
+    public void onHiding() {
+        //Guide
+        if(synergologyGuide1Snackbar != null)
+            synergologyGuide1Snackbar.dismiss();
     }
 
     /**
@@ -187,7 +219,7 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         if(imageFragment.getCurrentAreaImage().equals(ImageFragment.IMAGE_BODY_AREAS) || currentImageArea.getId() == 100)
             imageArea = imageFragment.getImageArea(103);
         //Head part to Head
-        else if(imageFragment.getCurrentAreaImage().equals(ImageFragment.IMAGE_HEAD_AREAS) && currentImageArea.getId() != 100)
+        else if(imageFragment.getCurrentAreaImage().equals(ImageFragment.IMAGE_HEAD_AREAS))
             imageArea = imageFragment.getImageArea(100);
         //Go to this area
         if(imageArea != null)
@@ -205,22 +237,52 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         if(!animationRunning && imageArea != currentImageArea) {
             //Same container for all animations
             animationRunning = true;
-            animations = new AnimatorSet();
 
             //Show the image
             showImage(imageArea);
 
+            //Animations
+            animations = new AnimatorSet();
+
             //Show attitudes if it's not the head
             showAttitude(imageArea);
 
-            //Start all animations
+            //Guide 1 - Fermeture
+            if (!synergologyGuide1 && currentGroupId != -1 && currentGroupId != 100 && currentGroupId != 103){
+                synergologyGuide1Snackbar.dismiss();
+                synergologyGuide1Snackbar = null;
+                synergologyGuide1 = true;
+            }
+
             animations.setInterpolator(new AccelerateDecelerateInterpolator());
-            animations.addListener(new AnimatorListenerAdapter(){
-                public void onAnimationEnd(Animator animation){
-                    if(attitudeFragmentVisible != null)
+            animations.addListener(new AnimatorListenerAdapter() {
+                public void onAnimationEnd(Animator animation) {
+                    if (attitudeFragmentVisible != null)
                         ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
                     animationRunning = false;
-                }});
+
+                    //Guide 2 - Ouverture
+                    if(!synergologyGuide2 && currentGroupId != -1 && currentGroupId != 100 && currentGroupId != 103) {
+                        Snackbar.make(synergologyLayout, R.string.tourguide_synergology_2, Snackbar.LENGTH_INDEFINITE).show();
+                        synergologyGuide2 = true;
+                        //Guide 2 - Fermeture
+                        new Handler().postDelayed(new Runnable() {
+                            public void run() {
+                                //Guide 3 - Ouverture
+                                synergologyGuide3Snackbar = Snackbar.make(synergologyLayout, R.string.tourguide_synergology_3, Snackbar.LENGTH_INDEFINITE);
+                                synergologyGuide3Snackbar.show();
+                                //Guide 3 - Fermeture
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                        synergologyGuide3Snackbar.dismiss();
+                                        synergologyGuide3Snackbar = null;
+                                    }
+                                }, 7000);
+                            }
+                        }, 7000);
+                    }
+                }
+            });
             animations.start();
 
             //Action Bar
@@ -365,6 +427,7 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
 
             //Animation
             ObjectAnimator translatePrevious, hidePrevious, viewNext, translateNext;
+
             //Hide attitude fragment
             if (attitudeFragmentVisible != null) {
                 ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
@@ -397,6 +460,10 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
                 currentGroupId = -1;
             }
         }
+    }
+
+    public void onImageLoaded(){
+        mainActivity.closeSplashscreen();
     }
 
     public void onAttitudeClick(View view) {

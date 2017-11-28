@@ -8,6 +8,7 @@
     <!-- General -->
     <color name="main_background">#9E9E9E</color>
     <color name="activity_background">#F7F7F7</color>
+    <color name="tourguide_background">#9f000000</color>
     <color name="table_row_odd_background">#E0E0E0</color>
 
     <!-- Activity Synergology -->

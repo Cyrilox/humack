@@ -52,6 +52,16 @@ abstract public class ActivityFragment extends Fragment{
     abstract public void init();
 
     /**
+     * Called each time the ActivityFragment is visible, after transition is finished
+     */
+    public void onVisible(){}
+
+    /**
+     * Called each time the ActivityFragment start to be hidden, before transition
+     */
+    public void onHiding(){}
+
+    /**
      * Same method used in Activity but here to be dispatched into Fragment
      * @return True if back has been handled, thus to do nothing after that method
      */

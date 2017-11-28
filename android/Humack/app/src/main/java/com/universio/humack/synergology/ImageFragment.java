@@ -28,10 +28,11 @@ public class ImageFragment extends Fragment{
     private GestureDetector gestureDetector;
 
     //Images
-    public static final String IMAGE_BODY_AREAS = "human_body_areas.jpg", IMAGE_HEAD_AREAS = "human_body_areas_head.jpg";
+    public static final String IMAGE_BODY = "human_body.png", IMAGE_BODY_AREAS = "human_body_areas.png", IMAGE_HEAD_AREAS = "human_body_areas_head.png";
     private String currentAreaImage;
     public static final int REAL_IMAGE_WIDTH = 4215, REAL_IMAGE_HEIGHT = 6000;
-    private static final int AREA_IMAGE_WIDTH = 200, AREA_IMAGE_HEIGHT = 285;
+    private static final int AREA_IMAGE_WIDTH = 600, AREA_IMAGE_HEIGHT = 854, AREA_IMAGE_HEAD_WIDTH = 600, AREA_IMAGE_HEAD_HEIGHT = 606;
+    private Rect areaImageHeadFrame;
 
     //Image areas
     private ArrayList<ImageArea> imageAreasHead, imageAreasBody, currentImageAreas;
@@ -56,7 +57,7 @@ public class ImageFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
         bodyView = (SubsamplingScaleImageView)getView();
         if(bodyView != null) {
-            bodyView.setImage(ImageSource.asset("human_body.jpg"));
+            bodyView.setImage(ImageSource.asset(IMAGE_BODY));
             bodyView.setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_OUTSIDE);
             bodyView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
             bodyView.setMinimumDpi(20);//Zoom minimum
@@ -65,29 +66,22 @@ public class ImageFragment extends Fragment{
             bodyView.setQuickScaleEnabled(false);
             bodyView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
                 @Override
-                public void onReady() {
-
-                }
+                public void onReady() {}
 
                 @Override
                 public void onImageLoaded() {
                     bodyView.setMaximumDpi(10000);//Zoom large
+                    interactionListener.onImageLoaded();
                 }
 
                 @Override
-                public void onPreviewLoadError(Exception e) {
-
-                }
+                public void onPreviewLoadError(Exception e) {}
 
                 @Override
-                public void onImageLoadError(Exception e) {
-
-                }
+                public void onImageLoadError(Exception e) {}
 
                 @Override
-                public void onTileLoadError(Exception e) {
-
-                }
+                public void onTileLoadError(Exception e) {}
             });
 
             gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener(){
@@ -150,6 +144,9 @@ public class ImageFragment extends Fragment{
                 imageAreasBody.add(imageArea);
             }
             this.setCurrentAreaImage(IMAGE_BODY_AREAS);
+
+            //Cadre en coordonnée réel du cadre occupée par l'image de zone de la tête
+            areaImageHeadFrame = new Rect(1574, 0, 2680, 1118);
         }
     }
 
@@ -170,13 +167,23 @@ public class ImageFragment extends Fragment{
      * @param yCoord The Y coordinate of the real image
      */
     public void onSingleTap(int xCoord, int yCoord) {
-        if (interactionListener != null) {
+        if (interactionListener != null && xCoord >= 0 && xCoord < REAL_IMAGE_WIDTH && yCoord >= 0 && yCoord < REAL_IMAGE_HEIGHT) {
             //Coordinates
             int realXCoord, realYCoord;
-            realXCoord = AREA_IMAGE_WIDTH * xCoord / REAL_IMAGE_WIDTH;
-            realYCoord = AREA_IMAGE_HEIGHT * yCoord / REAL_IMAGE_HEIGHT;
+            if(currentAreaImage.equals(IMAGE_BODY_AREAS)) {
+                realXCoord = Math.round(AREA_IMAGE_WIDTH * xCoord / (float)REAL_IMAGE_WIDTH);
+                realYCoord = Math.round(AREA_IMAGE_HEIGHT * yCoord / (float)REAL_IMAGE_HEIGHT);
+                if(realXCoord < 0 || realXCoord >= AREA_IMAGE_WIDTH || realYCoord < 0 || realYCoord >= AREA_IMAGE_HEIGHT)
+                    return;
+            }else{
+                realXCoord = Math.round(AREA_IMAGE_HEAD_WIDTH * ((xCoord-areaImageHeadFrame.left) * (REAL_IMAGE_WIDTH/(float)areaImageHeadFrame.width())) / (float)REAL_IMAGE_WIDTH);
+                realYCoord = Math.round(AREA_IMAGE_HEAD_HEIGHT * ((yCoord-areaImageHeadFrame.top) * (REAL_IMAGE_HEIGHT/(float)areaImageHeadFrame.height())) / (float)REAL_IMAGE_HEIGHT);
+                if(realXCoord < 0 || realXCoord >= AREA_IMAGE_HEAD_WIDTH || realYCoord < 0 || realYCoord >= AREA_IMAGE_HEAD_HEIGHT)
+                    return;
+            }
             //Pixel color
             int pixelColor = Tools.getPixelColor(currentAreaImage, realXCoord, realYCoord);
+
             //Search the area clicked
             ImageArea imageAreaClicked = null;
             for (ImageArea imageArea : currentImageAreas){
@@ -186,6 +193,7 @@ public class ImageFragment extends Fragment{
                     break;
                 }
             }
+
             //Only if an area is found
             if (imageAreaClicked != null)
                 interactionListener.onImageAreaClick(imageAreaClicked);
@@ -201,6 +209,11 @@ public class ImageFragment extends Fragment{
          * @param imageArea The ImageArea clicked
          */
         void onImageAreaClick(ImageArea imageArea);
+
+        /**
+         * Image is loaded
+         */
+        void onImageLoaded();
     }
 
     /**
