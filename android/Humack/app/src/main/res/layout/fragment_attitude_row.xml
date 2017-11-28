@@ -1,34 +1,89 @@
-<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:minHeight="48dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp">
+    android:paddingLeft="@dimen/default_spacing"
+    android:paddingRight="@dimen/default_spacing"
+    android:paddingTop="@dimen/default_spacing_half"
+    android:paddingBottom="@dimen/default_spacing_half">
 
     <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_gravity="center_vertical"
-        android:id="@+id/fragment_attitude_data_attitude" >
+        android:id="@+id/fragment_attitude_row_attitude">
 
         <ImageView
-            android:id="@+id/fragment_attitude_data_micromovement"
+            android:id="@+id/fragment_attitude_row_micromovement"
+            android:visibility="gone"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_marginEnd="3dp"
             android:layout_marginRight="3dp"
-            android:visibility="gone"
             android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description" />
 
         <TextView
-            android:id="@+id/fragment_attitude_data_description"
+            android:id="@+id/fragment_attitude_row_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/fragment_attitude_data_meaning"
-        android:layout_marginLeft="16dp"
-        android:layout_gravity="center_vertical"
-        android:gravity="center_vertical" />
-</TableRow>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="@dimen/default_spacing">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/fragment_attitude_row_hemisphere_left"
+                android:visibility="gone"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/fragment_attitude_row_hemisphere_left_icon_description" />
+
+            <TextView
+                android:id="@+id/fragment_attitude_row_meaning_a"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/fragment_attitude_row_hemisphere_right"
+                android:visibility="gone"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/fragment_attitude_row_hemisphere_right_icon_description" />
+
+            <TextView
+                android:id="@+id/fragment_attitude_row_meaning_b"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

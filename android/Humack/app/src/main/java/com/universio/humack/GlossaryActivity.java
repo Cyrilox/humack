@@ -44,8 +44,6 @@ public class GlossaryActivity extends ActivityFragment {
         TableLayout tableLayout;
         if(rootView != null) {
             tableLayout = (TableLayout) rootView.findViewById(R.id.activity_glossary_table);
-            int oddBackgroundColor = getResources().getColor(R.color.table_row_odd_background);
-            boolean odd = false;
             for (Glossary glossary : glossarys) {
                 TableRow tableRow = (TableRow) inflater.inflate(R.layout.activity_glossary_row, null);
 
@@ -54,14 +52,12 @@ public class GlossaryActivity extends ActivityFragment {
                 TextView definitionView = (TextView) tableRow.findViewById(R.id.activity_glossary_definition);
                 definitionView.setText(glossary.getDefinition());
 
-                //Style
-                if (odd)
-                    tableRow.setBackgroundColor(oddBackgroundColor);
-                odd = !odd;
-
                 tableLayout.addView(tableRow);
             }
         }
+
+        //Fermeture de l'écran de chargement
+        mainActivity.closeSplashscreen();
     }
 
     @Override

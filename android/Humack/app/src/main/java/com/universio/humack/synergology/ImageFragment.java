@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -13,29 +14,43 @@ import android.view.ViewGroup;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.universio.humack.R;
+import com.universio.humack.Settings;
 import com.universio.humack.Tools;
+import com.universio.humack.synergology.data.ImageArea;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Cyril Humbertclaude on 11/05/2015.
  */
 public class ImageFragment extends Fragment{
-
-    //Activity handling clicks
-    private OnInteractionListener interactionListener;
+    //Image
     private SubsamplingScaleImageView bodyView;
+
+    //Handlings
+    private OnInteractionListener interactionListener = null;
     private GestureDetector gestureDetector;
+    private boolean isTouchedRecently = false;
+    private long lastTouchTime = 0;
 
     //Images
-    public static final String IMAGE_BODY = "human_body.png", IMAGE_BODY_AREAS = "human_body_areas.png", IMAGE_HEAD_AREAS = "human_body_areas_head.png";
-    private String currentAreaImage;
-    public static final int REAL_IMAGE_WIDTH = 4215, REAL_IMAGE_HEIGHT = 6000;
+    public static final int IMAGE_HEAD_AREAS_ID = 0, IMAGE_BODY_AREAS_ID = 1;
+    private static final String IMAGE_BODY = "human_body.jpg", IMAGE_BODY_AREAS = "human_body_areas.jpg", IMAGE_HEAD_AREAS = "human_body_areas_head.jpg";
+    private static final int MODE_ANIMATION = 0, MODE_MANUAL = 1, REAL_IMAGE_WIDTH = 4215, REAL_IMAGE_HEIGHT = 6000;
     private static final int AREA_IMAGE_WIDTH = 600, AREA_IMAGE_HEIGHT = 854, AREA_IMAGE_HEAD_WIDTH = 600, AREA_IMAGE_HEAD_HEIGHT = 606;
-    private Rect areaImageHeadFrame;
+
+    private int currentMode = -1;
 
     //Image areas
-    private ArrayList<ImageArea> imageAreasHead, imageAreasBody, currentImageAreas;
+    private ArrayList<ImageArea> imageAreas=null;
+    private Rect areaImageHeadFrame;
+
+    //Sizes
+    private Rect frameFullsize, frameSmallsize;
+    private int imageViewWidth, imageViewHeight;
+    private HashMap<Integer, Object[]> scalesAndCenters;
+    private float scaleHeadForSwitch = 0;
 
     public static ImageFragment newInstance() {
         return new ImageFragment();
@@ -44,7 +59,6 @@ public class ImageFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.init();
     }
 
     @Override
@@ -57,20 +71,21 @@ public class ImageFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
         bodyView = (SubsamplingScaleImageView)getView();
         if(bodyView != null) {
+            //Image
             bodyView.setImage(ImageSource.asset(IMAGE_BODY));
-            bodyView.setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_OUTSIDE);
-            bodyView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
-            bodyView.setMinimumDpi(20);//Zoom minimum
-            bodyView.setPanEnabled(false);
-            bodyView.setZoomEnabled(false);
+            //Image transformations
+            bodyView.setPanEnabled(true);
+            bodyView.setZoomEnabled(true);
             bodyView.setQuickScaleEnabled(false);
+            bodyView.setMinimumTileDpi(160);//OutOfMemoryError si supérieur sur device très HD
+            setMode(MODE_MANUAL);
+            //Events handling
             bodyView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
                 @Override
                 public void onReady() {}
 
                 @Override
                 public void onImageLoaded() {
-                    bodyView.setMaximumDpi(10000);//Zoom large
                     interactionListener.onImageLoaded();
                 }
 
@@ -83,15 +98,33 @@ public class ImageFragment extends Fragment{
                 @Override
                 public void onTileLoadError(Exception e) {}
             });
-
             gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener(){
                 @Override
                 public boolean onSingleTapConfirmed(MotionEvent event){
+                    //Click
                     if (bodyView.isReady()) {
                         PointF coord = bodyView.viewToSourceCoord(event.getX(), event.getY());
                         onSingleTap((int)coord.x, (int)coord.y);
                     }
                     return true;
+                }
+
+                @Override
+                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                    notifyListenerOfGesture();
+                    return super.onScroll(e1, e2, distanceX, distanceY);
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    notifyListenerOfGesture();
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    notifyListenerOfGesture();
+                    super.onLongPress(e);
                 }
             });
             bodyView.setOnTouchListener(new View.OnTouchListener() {
@@ -101,6 +134,27 @@ public class ImageFragment extends Fragment{
                 }
             });
         }
+        //! Valeur en dur !
+        areaImageHeadFrame = new Rect(1574, 0, 2680, 1118);
+    }
+
+    private void notifyListenerOfGesture(){
+        //Not very often
+        long time = System.currentTimeMillis();
+        if(time - lastTouchTime > 100)
+            isTouchedRecently = false;
+        if(!isTouchedRecently){
+            isTouchedRecently = true;
+            lastTouchTime = time;
+            //Change to manual mode to restrict pan & scale
+            setMode(MODE_MANUAL);
+            //Notify the activity to close current attitude
+            interactionListener.onTouched();
+        }
+    }
+
+    public void setImageAreas(ArrayList<ImageArea> imageAreas) {
+        this.imageAreas = imageAreas;
     }
 
     public void setListener(OnInteractionListener interactionListener){
@@ -108,96 +162,169 @@ public class ImageFragment extends Fragment{
     }
 
     /**
-     * Init imageAreasHead and imageAreasBody lists
+     * Switch the SubsamplingScaleImageView parameters
+     * @param mode MODE_ANIMATION is flexible in order to do animations, MODE_MANUAL is narrowed for manual gestures
      */
-    private void init(){
-        interactionListener = null;
-        if(imageAreasHead == null) {
-            imageAreasHead = new ArrayList<>();
-            //Ids come from the Excel file in the "listes" tab
-            int[] headAreasIds = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-            //Unique colors from the "head_areas" image
-            int[] headAreasColors = new int[]{-16776961, -65281, -65536, -16711936, -16711681, -8454017, -256, -8454144, -16744577, -16777216, -12910533};
-            //Frames from the "body_frames" image
-            Rect[] headAreasFrames = new Rect[]{R(1848, 15, 2585, 473), R(2309, 268, 2584, 441), R(2268, 411, 2584, 505), R(2274, 465, 2585, 544), R(2421, 481, 2577, 723), R(1910, 433, 2080, 690), R(2374, 723, 2547, 836), R(2292, 808, 2508, 941), R(1892, 780, 2352, 1058), R(1660, 681, 2112, 1076), R(1390, 982, 2901, 1980)};
-            int id, color;
-            Rect imageFrame;
-            for (int i = 0; i < headAreasIds.length; i++) {
-                id = headAreasIds[i];
-                color = headAreasColors[i];
-                imageFrame = headAreasFrames[i];
-                ImageArea imageArea = new ImageArea(id, color, imageFrame);
-                imageAreasHead.add(imageArea);
+    private void setMode(int mode){
+        if(mode != currentMode) {
+            switch (mode) {
+                case MODE_ANIMATION://Flexible
+                    currentMode = MODE_ANIMATION;
+                    bodyView.setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_OUTSIDE);
+                    bodyView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+                    bodyView.setMinimumDpi(20);//Zoom in max
+                    bodyView.setMaximumDpi(10000);//Zoom out max
+                    break;
+                case MODE_MANUAL://Narrowed
+                    currentMode = MODE_MANUAL;
+                    bodyView.setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_CENTER);
+                    bodyView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE);
+                    bodyView.setMinimumDpi(20);//Zoom in max
+                    break;
+                default://Wrong mode
+                    Log.w("_ImageFragment", ".setMode| Mode " + mode + " is not existing, nothing has been done.");
             }
-            imageAreasBody = new ArrayList<>();
-            //Ids come from the Excel file in the "listes" tab, except for 100 / 101 / 102 / 103 corresponding to head / handshake / seated / body
-            int[] bodyAreasIds = new int[]{10, 11, 12, 13, 14, 15, 15, 16, 16, 17, 18, 18, 100, 101, 102, 103};
-            //Unique colors from the "body_areas" image
-            int[] bodyAreaColors = new int[]{-16777216, -16711681, -256, -12910533, -6710887, -16711936, -16741632, -8224001, -16776961, -65281, -26215, -65536, -8454144, -16744577, -4354746, -1111};
-            //Frames from the "body_frames" image
-            Rect[] bodyAreaFrames = new Rect[]{R(1662, 680, 2114, 1078), R(1390, 982, 2901, 1980), R(1527, 1821, 2730, 3072), R(2943, 1341, 3966, 2421), R(2637, 1035, 3144, 1491), R(748, 1176, 1556, 2944), R(2700, 1176, 3508, 2944), R(572, 2864, 992, 3404), R(3268, 2860, 3684, 3404), R(1364, 3008, 2884, 5440), R(1132, 5404, 1612, 5980), R(2632, 5400, 3120, 5976), R(1668, 6, 2592, 1059), R(148, 3984, 1000, 4432), R(3412, 4396, 4076, 5306), R(0, 0, REAL_IMAGE_WIDTH, REAL_IMAGE_HEIGHT)};
-            for (int i = 0; i < bodyAreasIds.length; i++) {
-                id = bodyAreasIds[i];
-                color = bodyAreaColors[i];
-                imageFrame = bodyAreaFrames[i];
-                ImageArea imageArea = new ImageArea(id, color, imageFrame);
-                imageAreasBody.add(imageArea);
-            }
-            this.setCurrentAreaImage(IMAGE_BODY_AREAS);
-
-            //Cadre en coordonnée réel du cadre occupée par l'image de zone de la tête
-            areaImageHeadFrame = new Rect(1574, 0, 2680, 1118);
         }
     }
 
-    private Rect R(int left, int top, int right, int bottom){
-        return new Rect(left, top, right, bottom);
+    public void updateSizes(int splitY) {
+        View view = getView();
+        if(view != null) {
+            //Frames
+            imageViewWidth = view.getWidth();
+            imageViewHeight = view.getHeight();
+            frameFullsize = new Rect(0, 0, imageViewWidth, imageViewHeight);
+            frameSmallsize = new Rect(0, 0, imageViewWidth, splitY);
+            //Scales and centers
+            if(imageAreas != null){
+                scalesAndCenters = new HashMap<>();
+                for(ImageArea imageArea : imageAreas) {
+                    Object[] scaleAndCenter = getScaleAndCenter(imageArea);
+                    scalesAndCenters.put(imageArea.getId(), scaleAndCenter);
+                    if(imageArea.getBodyGroup().getId() == 21)
+                        scaleHeadForSwitch = (float)scaleAndCenter[0]*70/100;//Larger zoom for head switching
+                }
+            }
+        }
     }
 
-    /**
-     *
-     * @param event The MotionEvent object containing full information about
-     *              the event.
-     * @return True if the listener has consumed the event, false otherwise.
-     */
     /**
      * Triggered when clicking on the images fragment
      * Search the corresponding ImageArea and send it to the listener Activity
      * @param xCoord The X coordinate of the real image
      * @param yCoord The Y coordinate of the real image
      */
-    public void onSingleTap(int xCoord, int yCoord) {
+    private void onSingleTap(int xCoord, int yCoord) {
         if (interactionListener != null && xCoord >= 0 && xCoord < REAL_IMAGE_WIDTH && yCoord >= 0 && yCoord < REAL_IMAGE_HEIGHT) {
-            //Coordinates
+            //Search the area clicked into body area image
             int realXCoord, realYCoord;
-            if(currentAreaImage.equals(IMAGE_BODY_AREAS)) {
-                realXCoord = Math.round(AREA_IMAGE_WIDTH * xCoord / (float)REAL_IMAGE_WIDTH);
-                realYCoord = Math.round(AREA_IMAGE_HEIGHT * yCoord / (float)REAL_IMAGE_HEIGHT);
-                if(realXCoord < 0 || realXCoord >= AREA_IMAGE_WIDTH || realYCoord < 0 || realYCoord >= AREA_IMAGE_HEIGHT)
-                    return;
-            }else{
-                realXCoord = Math.round(AREA_IMAGE_HEAD_WIDTH * ((xCoord-areaImageHeadFrame.left) * (REAL_IMAGE_WIDTH/(float)areaImageHeadFrame.width())) / (float)REAL_IMAGE_WIDTH);
-                realYCoord = Math.round(AREA_IMAGE_HEAD_HEIGHT * ((yCoord-areaImageHeadFrame.top) * (REAL_IMAGE_HEIGHT/(float)areaImageHeadFrame.height())) / (float)REAL_IMAGE_HEIGHT);
-                if(realXCoord < 0 || realXCoord >= AREA_IMAGE_HEAD_WIDTH || realYCoord < 0 || realYCoord >= AREA_IMAGE_HEAD_HEIGHT)
-                    return;
-            }
-            //Pixel color
-            int pixelColor = Tools.getPixelColor(currentAreaImage, realXCoord, realYCoord);
+            realXCoord = Math.round(AREA_IMAGE_WIDTH * xCoord / (float)REAL_IMAGE_WIDTH);
+            realYCoord = Math.round(AREA_IMAGE_HEIGHT * yCoord / (float)REAL_IMAGE_HEIGHT);
+            if(realXCoord < 0 || realXCoord >= AREA_IMAGE_WIDTH || realYCoord < 0 || realYCoord >= AREA_IMAGE_HEIGHT)
+                return;
 
-            //Search the area clicked
-            ImageArea imageAreaClicked = null;
-            for (ImageArea imageArea : currentImageAreas){
-                int areaColor = imageArea.getColor();
-                if (Tools.isCloseColor(pixelColor, areaColor, 25)) {
-                    imageAreaClicked = imageArea;
-                    break;
-                }
-            }
+            int pixelColor = Tools.getPixelColor(IMAGE_BODY_AREAS, realXCoord, realYCoord);
+
+            ImageArea imageAreaClicked = getImageArea(pixelColor, IMAGE_BODY_AREAS_ID);
 
             //Only if an area is found
-            if (imageAreaClicked != null)
+            if (imageAreaClicked != null) {
+                //Zoom suffisant si le zoom actuelle est supérieur ou égale au zoom de la tête avec marge
+                boolean isZoomEnough = bodyView.getScale() >= scaleHeadForSwitch;
+
+                //If the head is clicked and the image is enough zoomed in
+                if (imageAreaClicked.getBodyGroup().getId() == 21 && isZoomEnough){
+                    //Search again into the head area
+                    int realHeadXCoord, realHeadYCoord;
+                    realHeadXCoord = Math.round(AREA_IMAGE_HEAD_WIDTH * ((xCoord-areaImageHeadFrame.left) * (REAL_IMAGE_WIDTH/(float)areaImageHeadFrame.width())) / (float)REAL_IMAGE_WIDTH);
+                    realHeadYCoord = Math.round(AREA_IMAGE_HEAD_HEIGHT * ((yCoord-areaImageHeadFrame.top) * (REAL_IMAGE_HEIGHT/(float)areaImageHeadFrame.height())) / (float)REAL_IMAGE_HEIGHT);
+                    if(realHeadXCoord < 0 || realHeadXCoord >= AREA_IMAGE_HEAD_WIDTH || realHeadYCoord < 0 || realHeadYCoord >= AREA_IMAGE_HEAD_HEIGHT)
+                        return;
+
+                    int pixelColorHead = Tools.getPixelColor(IMAGE_HEAD_AREAS, realHeadXCoord, realHeadYCoord);
+
+                    ImageArea imageAreaHeadClicked = getImageArea(pixelColorHead, IMAGE_HEAD_AREAS_ID);
+
+                    if(imageAreaHeadClicked != null)
+                        imageAreaClicked = imageAreaHeadClicked;
+                }
                 interactionListener.onImageAreaClick(imageAreaClicked);
+            }
         }
+    }
+
+    /**
+     * Search the area corresponding to a pixel color
+     * @param pixelColor The pixel color to search
+     * @param areaImageId The image id where to search
+     * @return The area or null
+     */
+    private ImageArea getImageArea(int pixelColor, int areaImageId){
+        for (ImageArea imageArea : imageAreas)
+            if(imageArea.getImage() == areaImageId)
+                if (Tools.isCloseColor(pixelColor, imageArea.getColor(), 25))
+                    return imageArea;
+        return null;
+    }
+
+    /**
+     * Zoom and translate image in order to see the ImageArea
+     * @param imageArea The destination area
+     */
+    public void showImageArea(ImageArea imageArea){
+        Object[] scaleAndCenter = scalesAndCenters.get(imageArea.getId());
+
+        setMode(MODE_ANIMATION);
+
+        bodyView.animateScaleAndCenter((float)scaleAndCenter[0], (PointF)scaleAndCenter[1])
+                .withDuration(Settings.getAnimationSpeed())
+                .withEasing(SubsamplingScaleImageView.EASE_IN_OUT_QUAD)
+                .withInterruptible(true)
+                .start();
+    }
+
+    private Object[] getScaleAndCenter(ImageArea imageArea){
+        Rect toframe, imageFrame;
+        float toFrameWidth, toframeHeight, imageFrameWidth, imageFrameHeight, imageFrameHeightVisible, imageFrameCenterX, imageFrameCenterY;
+        float toCenterX, toCenterY, toScale, toScaleX, toScaleY, visibleWidth, xShift, yShift;
+        boolean scaleFromHeight;
+
+        //Destination frame on the screen
+        if(imageArea.getBodyGroup().hasAttitudes())
+            toframe = frameSmallsize;//Small on top if has attitudes
+        else //Else small size with attitudes
+            toframe = frameFullsize;//Full size instead
+        toFrameWidth = toframe.right - toframe.left;
+        toframeHeight = toframe.bottom - toframe.top;
+
+        //Areas with the full size
+        imageFrame = imageArea.getRectangle();
+        imageFrameWidth = imageFrame.right - imageFrame.left;
+        imageFrameHeight = imageFrame.bottom - imageFrame.top;
+        imageFrameCenterX = (int)Math.floor(imageFrame.left + imageFrameWidth / 2);
+        imageFrameCenterY = (int)Math.floor(imageFrame.top + imageFrameHeight / 2);
+
+        //Scale
+        visibleWidth = imageFrameHeight * toFrameWidth / toframeHeight;
+        scaleFromHeight = visibleWidth > imageFrameWidth;
+        toScaleX = toFrameWidth / imageFrameWidth;
+        toScaleY = toframeHeight / imageFrameHeight;
+
+        toScale = scaleFromHeight ? toScaleY : toScaleX;
+
+        imageFrameHeightVisible = imageFrameHeight;
+        if(!scaleFromHeight)
+            imageFrameHeightVisible *= toScaleY / toScaleX;
+
+        //Translate
+        xShift = toFrameWidth == imageViewWidth ? 0 : ImageFragment.REAL_IMAGE_WIDTH * imageFrameWidth * 1.5f / ImageFragment.REAL_IMAGE_WIDTH;
+        yShift = toframeHeight == imageViewHeight ? 0 : ImageFragment.REAL_IMAGE_HEIGHT * imageFrameHeightVisible * 1.5f / ImageFragment.REAL_IMAGE_HEIGHT;
+        toCenterX = (int)Math.floor(imageFrameCenterX + xShift);
+        toCenterY = (int)Math.floor(imageFrameCenterY + yShift);
+
+        PointF toCenter = new PointF(toCenterX, toCenterY);
+
+        return new Object[]{toScale, toCenter};
     }
 
     /**
@@ -214,39 +341,11 @@ public class ImageFragment extends Fragment{
          * Image is loaded
          */
         void onImageLoaded();
+
+        /**
+         * Image is touched
+         */
+        void onTouched();
     }
 
-    /**
-     * Change the current area image
-     * @param newAreaImage ImageFragment.IMAGE_BODY_AREAS or ImageFragment.IMAGE_HEAD_AREAS
-     */
-    public void setCurrentAreaImage(String newAreaImage) {
-        if(newAreaImage.equals(IMAGE_BODY_AREAS) || newAreaImage.equals(IMAGE_HEAD_AREAS)) {
-            this.currentAreaImage = newAreaImage;
-            if(newAreaImage.equals(IMAGE_BODY_AREAS))
-                currentImageAreas = imageAreasBody;
-            else
-                currentImageAreas = imageAreasHead;
-        }
-    }
-
-    public String getCurrentAreaImage() {
-        return currentAreaImage;
-    }
-
-    /**
-     * Return the ImageArea
-     * @param id Id of the ImageArea
-     * @return The ImageArea
-     */
-    public ImageArea getImageArea(int id){
-        for(ImageArea imageArea : imageAreasBody)
-            if(imageArea.getId() == id)
-                return imageArea;
-        for(ImageArea imageArea : imageAreasHead)
-            if(imageArea.getId() == id)
-                return imageArea;
-
-        return null;
-    }
 }

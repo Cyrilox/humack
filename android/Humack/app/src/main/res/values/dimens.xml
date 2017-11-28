@@ -1,6 +1,7 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="default_spacing">16dp</dimen>
+    <dimen name="default_spacing_half">8dp</dimen>
 
     <!-- Activity Synergology -->
     <dimen name="fragment_attitude_band_height">12dp</dimen>
@@ -13,8 +14,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- Elevations -->
-    <dimen name="elevation_default_spacing">4dp</dimen>
-    <dimen name="elevation_activity">0dp</dimen>
-    <dimen name="elevation_attitudes">4dp</dimen>
+    <dimen name="elevation_attitudes">16dp</dimen>
+    <dimen name="elevation_attitudes_header">4dp</dimen>
 
 </resources>

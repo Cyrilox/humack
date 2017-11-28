@@ -2,9 +2,12 @@ package com.universio.humack;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
 public class AboutActivity extends ActivityFragment {
+
+    private String websiteUrl, testGroupUrl;
 
     public static AboutActivity newInstance(){
         return new AboutActivity();
@@ -20,11 +23,36 @@ public class AboutActivity extends ActivityFragment {
     }
 
     @Override
-    public void init(){
-        View rootView = getView();
+    public void init() {
+        //Website links
+        websiteUrl = getResources().getString(R.string.activity_about_officialwebsite_url);
+        testGroupUrl = getResources().getString(R.string.activity_about_betagroup_url);
+
         //Textview Html.fromHtml fix
-        if(rootView != null)
-            Tools.fromHtml((ViewGroup)rootView);
+        View rootView = getView();
+        if (rootView != null){
+            Tools.fromHtml((ViewGroup) rootView);
+
+            //Click
+            Button openWebsite, openBetaGroup;
+            openWebsite = (Button) rootView.findViewById(R.id.activity_about_officialwebsite);
+            openBetaGroup = (Button) rootView.findViewById(R.id.activity_about_betagroup);
+            openWebsite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Tools.openUrl(getActivity(), websiteUrl);
+                }
+            });
+            openBetaGroup.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Tools.openUrl(getActivity(), testGroupUrl);
+                }
+            });
+        }
+
+        //Fermeture de l'écran de chargement
+        mainActivity.closeSplashscreen();
     }
 
     @Override

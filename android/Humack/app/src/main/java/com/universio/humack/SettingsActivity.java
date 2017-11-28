@@ -34,6 +34,9 @@ public class SettingsActivity extends ActivityFragment implements SeekBar.OnSeek
         int animationSpeedProgress = 100 - Math.round((Settings.getAnimationSpeed() - Settings.getAnimationSpeedMin()) * 100 / animationSpeedRange);
         animationSpeedBar.setProgress(animationSpeedProgress);
         animationSpeedBar.setOnSeekBarChangeListener(this);
+
+        //Fermeture de l'écran de chargement
+        mainActivity.closeSplashscreen();
     }
 
     @Override

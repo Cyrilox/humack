@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="title_activity_synergology_help">Le non verbal</string>
+
+    <string name="synergology_help_quote">« L’art de rétablir la vérité des Humains via le décodage de leur attitude »</string>
+
+    <string name="synergology_help_definition">&lt;b>Définition&lt;/b>&lt;br>Le non verbal chez une personne regroupe toutes les attitudes n’ayant pas recours à la parole, tel que les gestes. En observant puis analysant l’attitude d’une personne on peut comprendre qu’elle est sont véritable état d’esprit, celui-ci étant poussé dans la société à mettre des &lt;b>masques&lt;/b> entre lui et son interlocuteur pour être plus efficace.</string>
+
+    <string name="synergology_help_filter">&lt;b>Masque&lt;/b>&lt;br>C’est un comportement anormal de la personne, inconscient ou non, entraînant un mensonge ou silence permettant d’être plus efficace au quotidien. 3 types :&lt;br>- sincérité > survalorisation, acquiescement ou omission ;&lt;br>- spontanéité > silence ou mensonge sur des choses taboues, privées ou sentimentales ;&lt;br>- naturel > avant même l’interaction des a priori s’installent.</string>
+
+    <string name="synergology_help_solution">&lt;b>Solution&lt;/b>&lt;br>D’abord il faut &lt;b>observer&lt;/b> l’attitude de la personne dans son contexte, puis &lt;b>analyser&lt;/b> ces observations pour en déduire un sens, une hypothèse reflétant la vérité.</string>
+
+    <string name="synergology_help_observation">&lt;b>Observation&lt;/b>&lt;br>Il faut en priorité enregistrer un maximum d’informations sur l’attitude de la personne en incluant le contexte actuelle, comme par exemple la posture, la gestuelle ou les &lt;b>micromouvements&lt;/b>.</string>
+
+    <string name="synergology_help_micromovement">&lt;b>Micromouvement&lt;/b>&lt;br>Geste impulsif non conscient et subreptice, le plus souvent avec les doigts sur une partie du corps. 3 types :</string>
+    <string name="synergology_help_micromovement_caress">- caresse > bien-être et retour sur soi ;</string>
+    <string name="synergology_help_micromovement_fixedness">- fixation > concentration ;</string>
+    <string name="synergology_help_micromovement_itch">- démangeaison > antagonisme entre le dit et le non-dit.</string>
+
+    <string name="synergology_help_analysis">&lt;b>Analyse&lt;/b>&lt;br>La &lt;b>lecture&lt;/b> de ces informations peut avoir un sens général ; en associant le contexte et d’autres sens on peut en déduire une hypothèse sur l’état d’esprit actuelle de la personne.</string>
+
+    <string name="synergology_help_interpretation">&lt;b>Lecture&lt;/b>&lt;br>Hémisphérique : Le sens de l’analyse peut être différent suivant la moitié du corps observée.</string>
+    <string name="synergology_help_interpretation_left">&lt;b>Moitié à notre gauche&lt;/b>&lt;br>La réflexion, la logique, le détail.</string>
+    <string name="synergology_help_interpretation_left_icon">Moitié à notre gauche</string>
+    <string name="synergology_help_interpretation_right">&lt;b>Moitié à notre droite&lt;/b>&lt;br>L’impulsion, les émotions, le global.</string>
+    <string name="synergology_help_interpretation_right_icon">Moitié à notre droite</string>
+    <string name="synergology_help_interpretation_rest">Empathique : Mimétisme des gestes ou des paroles pour se rapprocher de l’autre.&lt;br>Sensorielle : Les mains vont vers les sens qui reflètent l’état d’esprit.&lt;br>Mouvement : Le sens des mouvements multiplie les interprétations possibles.</string>
+
+    <!--
+    <string name="synergology_help_rules_title">Règles</string>
+    <string name="synergology_help_rules_observation_title"><u>Observation</u></string>
+    <string name="synergology_help_rules_observation">- Sauvegarder les gestes et leurs contextes uniquement&lt;br>- Oublier la synergologie&lt;br>- Patienter l’arrivée des informations inconnues&lt;br>- Changer sa façon de regarder et non pas l’autre</string>
+    <string name="synergology_help_rules_analysis_title"><u>Analyse</u></string>
+    <string name="synergology_help_rules_analysis">- Partir du point de vue général vers le particulier&lt;br>- Eviter tout jugement moral&lt;br>- Avoir de l’humilité car des erreurs d’analyse sont possibles&lt;br>- Evaluer l’autre autant que sois même</string>
+    <string name="synergology_help_rules_both">- Être silencieux&lt;br>- Considérer l’autre comme un partenaire</string>
+    -->
+
+    <string name="synergology_help_application">&lt;b>L’application&lt;/b>&lt;br>&lt;i>« Des attitudes et leurs sens sur les zones du corps, ici tu trouveras. Plusieurs sens et leurs contextes, corréler tu dois ; plus grande, la force de ton analyse sera. »</string>
+
+    <!--
+    <string name="synergology_help_learnmore_title">En savoir plus</string>
+    <string name="synergology_help_learnmore_website">Site Officiel</string>
+    <string name="synergology_help_learnmore_website_url">http://www.synergologie.org</string>
+    <string name="synergology_help_learnmore_books">Livres</string>
+    <string name="synergology_help_learnmore_books_url">http://www.google.fr/?gws_rd=ssl#q=la+synergologie+philippe+turchet&amp;tbm=shop</string>
+    -->
+</resources>

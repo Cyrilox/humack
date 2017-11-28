@@ -1,46 +1,45 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
     android:visibility="gone"
     android:background="@color/fragment_attitude_background"
+    android:elevation="@dimen/elevation_attitudes"
+    android:clickable="true"
     android:id="@+id/fragment_attitude">
 
-    <TableLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/fragment_attitude_table">
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:background="@color/accent_color"
+        android:elevation="@dimen/elevation_attitudes_header"
+        android:id="@+id/fragment_attitude_header">
 
-        <TableRow
-            android:minHeight="40dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:background="@color/accent_color" >
+        <TextView
+            android:id="@+id/fragment_attitude_header_attitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/fragment_attitude_table_header_attitude"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/fragment_attitude_header_attitude"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/fragment_attitude_table_header_attitude"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/fragment_attitude_header_meaning"
-                android:layout_marginLeft="16dp"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/fragment_attitude_table_header_meaning"
-                android:textStyle="bold" />
-        </TableRow>
+        <TextView
+            android:id="@+id/fragment_attitude_header_meaning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/fragment_attitude_table_header_meaning"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/fragment_attitude_table_data">
-
-            </TableLayout>
-        </ScrollView>
-    </TableLayout>
-</FrameLayout>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/fragment_attitude_list" />
+</LinearLayout>

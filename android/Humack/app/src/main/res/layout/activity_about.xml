@@ -37,5 +37,24 @@
             android:layout_marginTop="@dimen/default_spacing"
             android:text="@string/app_description" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/activity_about_officialwebsite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/activity_about_officialwebsite" />
+            <Button
+                android:id="@+id/activity_about_betagroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/default_spacing"
+                android:text="@string/activity_about_betagroup" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

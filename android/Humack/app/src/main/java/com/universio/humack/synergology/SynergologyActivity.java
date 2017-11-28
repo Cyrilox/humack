@@ -1,33 +1,28 @@
 package com.universio.humack.synergology;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.graphics.PointF;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.ViewCompat;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.universio.humack.ActivityFragment;
 import com.universio.humack.MainActivity;
 import com.universio.humack.R;
 import com.universio.humack.Settings;
-import com.universio.humack.Tools;
 import com.universio.humack.data.Data;
 import com.universio.humack.data.DatabaseAO;
 import com.universio.humack.synergology.data.Attitude;
 import com.universio.humack.synergology.data.AttitudeDAO;
-import com.universio.humack.synergology.data.AttitudeTypeDAO;
-import com.universio.humack.synergology.data.BodypartDAO;
+import com.universio.humack.synergology.data.BodyGroup;
+import com.universio.humack.synergology.data.BodyGroupDAO;
+import com.universio.humack.synergology.data.Hemisphere;
+import com.universio.humack.synergology.data.HemisphereDAO;
+import com.universio.humack.synergology.data.ImageArea;
+import com.universio.humack.synergology.data.ImageAreaDAO;
+import com.universio.humack.synergology.data.Micromovement;
 import com.universio.humack.synergology.data.MicromovementDAO;
 
 import java.util.ArrayList;
@@ -40,30 +35,27 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
 
     //Données
     private ArrayList<Attitude> attitudes;
+    private ArrayList<BodyGroup> bodyGroups;
+    private ArrayList<ImageArea> imageAreas;
 
     //General
-    private int currentGroupId;
-    private String currentGroupName = null, toast_booka;
-    private float ELEVATION_ATTITUDES, ELEVATION_ATTITUDES_ABOVE;
+    private BodyGroup currentBodyGroup = null;
+    private AttitudeFragment currentAttitudeFragment = null;
+    private String toast_booka;
 
     //Fragments
     private FragmentManager fragmentManager;
     private ImageFragment imageFragment;
-    private SubsamplingScaleImageView imageView;
-    private int imageViewWidth, imageViewHeight;
-    private ImageArea currentImageArea;
-    private Hashtable<Integer, AttitudeFragment> attitudeFragments;
-    private AttitudeFragment attitudeFragmentVisible;
+    private Hashtable<BodyGroup, AttitudeFragment> attitudeFragments;
 
     //Views and Size
     private FrameLayout synergologyLayout;
-    private int layoutWidth, layoutHeight, splitY, attitudeFragmentHeight;
-    private float splitYRatio;
-    private Rect frameFullsize, frameSmallsize;
+    private int layoutWidth;
 
-    //Animation
-    private boolean animationRunning;
-    private AnimatorSet animations;
+    private int layoutHeight;
+    private int splitY;
+    private int attitudeFragmentHeight;
+    private float splitYRatio;
 
     //Tour guide
     private boolean synergologyGuide1, synergologyGuide2;
@@ -84,14 +76,23 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
 
     @Override
     public void init(){
+        //Fragments
+        fragmentManager = mainActivity.getFragmentManager();
+
         //General
         setOptionsMenu(R.menu.menu_synergology);
+        currentBodyGroup = null;
         toast_booka = getResources().getString(R.string.synergology_toast_page_booka);
-        ELEVATION_ATTITUDES = getResources().getDimension(R.dimen.elevation_attitudes);
-        ELEVATION_ATTITUDES_ABOVE = ELEVATION_ATTITUDES + getResources().getDimension(R.dimen.elevation_default_spacing);
 
         //Load the database
         loadDatabase();
+
+        //Body Image Fragment
+        imageFragment = ImageFragment.newInstance();
+        imageFragment.setImageAreas(imageAreas);
+        fragmentManager.beginTransaction().add(R.id.activity_synergology, imageFragment).commit();
+        fragmentManager.executePendingTransactions();//Fragment onCreateView called here
+        imageFragment.setListener(this);
 
         //Main layout
         synergologyLayout = (FrameLayout)getView();
@@ -100,23 +101,8 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         splitYRatio = 0.25f;
         splitY = 200;
 
-        //Fragments
-        fragmentManager = mainActivity.getFragmentManager();
-
-        //Body Image Fragment
-        imageFragment = ImageFragment.newInstance();
-        fragmentManager.beginTransaction().add(R.id.activity_synergology, imageFragment).commit();
-        fragmentManager.executePendingTransactions();//Fragment onCreateView called here
-        imageFragment.setListener(this);
-        imageView = (SubsamplingScaleImageView)getView().findViewById(R.id.fragment_image);
-
         //Attitude Fragment
         attitudeFragments = new Hashtable<>();
-        attitudeFragmentVisible = null;
-        currentGroupId = -1;
-
-        //Animation
-        animationRunning = false;
 
         //Tour guide
         if(Settings.isSynergologyGuide()) {
@@ -135,21 +121,32 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         DatabaseAO databaseAO = MainActivity.getDatabaseAO();
 
         //Accès aux données
-        AttitudeTypeDAO attitudeTypeDAO = new AttitudeTypeDAO(databaseAO);
-        BodypartDAO bodypartDAO = new BodypartDAO(databaseAO);
+        HemisphereDAO hemisphereDAO = new HemisphereDAO(databaseAO);
         MicromovementDAO micromovementDAO = new MicromovementDAO(databaseAO);
+        BodyGroupDAO bodyGroupDAO = new BodyGroupDAO(databaseAO);
+        ImageAreaDAO imageAreaDAO = new ImageAreaDAO(databaseAO);
         AttitudeDAO attitudeDAO = new AttitudeDAO(databaseAO);
 
         //Récuperation des données
         databaseAO.open();
-        ArrayList attitudeTypes, bodyparts, micromovements;
-        attitudeTypes = attitudeTypeDAO.getAll(null);
-        bodyparts = bodypartDAO.getAll(null);
-        micromovements = micromovementDAO.getAll(null);
 
-        attitudeDAO.setForeignDatas(attitudeTypes, bodyparts, micromovements);
+        ArrayList<Hemisphere> hemispheres = hemisphereDAO.getAll(null);
+        ArrayList<Micromovement> micromovements = micromovementDAO.getAll(null);
+        bodyGroups = bodyGroupDAO.getAll(null);
+        imageAreaDAO.setForeignDatas(bodyGroups);
+        imageAreas = imageAreaDAO.getAll(null);
+        attitudeDAO.setForeignDatas(bodyGroups, micromovements, hemispheres);
         attitudes = attitudeDAO.getAll(AttitudeDAO.COL_SUBORDER_NAME);
+
         databaseAO.close();
+
+        //Chargement objet des Attitude dans les BodyGroup
+        for(Attitude attitude : attitudes)
+            attitude.getBodyGroup().addAttitude(attitude);
+
+        //Chargement objet des ImageArea dans les BodyGroup
+        for(ImageArea imageArea : imageAreas)
+            imageArea.getBodyGroup().setImageArea(imageArea);
     }
 
     @Override
@@ -173,14 +170,18 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
      */
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        layoutWidth = synergologyLayout.getMeasuredWidth();
-        layoutHeight = synergologyLayout.getMeasuredHeight();
-        splitY = (int)(Math.floor(layoutHeight * splitYRatio));
-        attitudeFragmentHeight = layoutHeight - splitY;
-        imageViewWidth = imageView.getMeasuredWidth();
-        imageViewHeight = imageView.getMeasuredHeight();
-        frameFullsize = new Rect(left, top, left + imageViewWidth, top + imageViewHeight);
-        frameSmallsize = new Rect(left, top, left + imageViewWidth, top + splitY);
+        //Si les dimensions ont changées
+        if(synergologyLayout.getMeasuredWidth() != layoutWidth || synergologyLayout.getMeasuredHeight() != layoutHeight) {
+            //Nouvelles dimensions
+            layoutWidth = synergologyLayout.getMeasuredWidth();
+            layoutHeight = synergologyLayout.getMeasuredHeight();
+            splitY = (int) (Math.floor(layoutHeight * splitYRatio));
+            attitudeFragmentHeight = layoutHeight - splitY;
+            //Mise à jour des esclaves
+            imageFragment.updateSizes(splitY);
+            for (AttitudeFragment attitudeFragment : attitudeFragments.values())
+                attitudeFragment.updateSizes(splitY, layoutHeight);
+        }
     }
 
     @Override
@@ -209,267 +210,192 @@ public class SynergologyActivity extends ActivityFragment implements View.OnLayo
         return false;
     }
 
+    /**
+     * Find if it's possible to go to a group above by zooming out
+     * @return True if it's possible
+     */
     private boolean hasPrevious(){
-        return (currentImageArea != null) && (currentImageArea.getId() != 103);
+        return (currentBodyGroup != null) && (currentBodyGroup.getId() != 22);
     }
 
+    /**
+     * Switch to the head or body group, zoom out
+     */
     private void goBack(){
-        ImageArea imageArea=null;
-        //Body part or Head to Body
-        if(imageFragment.getCurrentAreaImage().equals(ImageFragment.IMAGE_BODY_AREAS) || currentImageArea.getId() == 100)
-            imageArea = imageFragment.getImageArea(103);
+        BodyGroup previousBodyGroup=null;
+        int id = currentBodyGroup.getId();
+        //Body part / Head to Body
+        if(id > 10 && id != 22)
+            previousBodyGroup = Data.getDataById(bodyGroups, 22);
         //Head part to Head
-        else if(imageFragment.getCurrentAreaImage().equals(ImageFragment.IMAGE_HEAD_AREAS))
-            imageArea = imageFragment.getImageArea(100);
+        else if(id <= 10)
+            previousBodyGroup = Data.getDataById(bodyGroups, 21);
         //Go to this area
-        if(imageArea != null)
-            onImageAreaClick(imageArea);
+        if(previousBodyGroup != null)
+            switchToGroup(previousBodyGroup, previousBodyGroup.getImageArea());
+    }
+
+    /**
+     * Trigger switchToGroup with the BodyGroup of the ImageArea
+     * @param imageArea The imageArea clicked
+     */
+    @Override
+    public void onImageAreaClick(ImageArea imageArea) {
+        switchToGroup(imageArea.getBodyGroup(), imageArea);
     }
 
     /**
      * A click on a body part
      * Zoom to the body part
-     * If not the head, init corresponding attitudes
-     * @param imageArea The imageArea clicked
+     * Show attitudes related
+     * @param bodyGroup The BodyGroup to switch
+     * @param imageArea The ImageArea to see
      */
-    @Override
-    public void onImageAreaClick(ImageArea imageArea) {
-        if(!animationRunning && imageArea != currentImageArea) {
-            //Same container for all animations
-            animationRunning = true;
+    private void switchToGroup(BodyGroup bodyGroup, ImageArea imageArea) {
+        //Show the image area - 1er pour asynchrone
+        imageFragment.showImageArea(imageArea);
 
-            //Show the image
-            showImage(imageArea);
+        //Change current area
+        currentBodyGroup = bodyGroup;
+        mainActivity.setActionBarHome(hasPrevious(), currentBodyGroup.getName());
 
-            //Animations
-            animations = new AnimatorSet();
+        //Show attitudes of the area
+        currentAttitudeFragment = null;
+        if (currentBodyGroup.hasAttitudes()) {
+            //Création / récuperation du fragment
+            currentAttitudeFragment = openAttitudes(currentBodyGroup);
 
-            //Show attitudes if it's not the head
-            showAttitude(imageArea);
+            if(currentAttitudeFragment != null) {
+                //Affichage de l'attitude
+                currentAttitudeFragment.changeVisibility(true, -1);
 
-            //Guide 1 - Fermeture
-            if (!synergologyGuide1 && currentGroupId != -1 && currentGroupId != 100 && currentGroupId != 103){
-                synergologyGuide1Snackbar.dismiss();
-                synergologyGuide1Snackbar = null;
-                synergologyGuide1 = true;
-            }
-
-            animations.setInterpolator(new AccelerateDecelerateInterpolator());
-            animations.addListener(new AnimatorListenerAdapter() {
-                public void onAnimationEnd(Animator animation) {
-                    if (attitudeFragmentVisible != null)
-                        ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
-                    animationRunning = false;
-
-                    //Guide 2 - Ouverture
-                    if(!synergologyGuide2 && currentGroupId != -1 && currentGroupId != 100 && currentGroupId != 103) {
-                        Snackbar.make(synergologyLayout, R.string.tourguide_synergology_2, Snackbar.LENGTH_INDEFINITE).show();
-                        synergologyGuide2 = true;
-                        //Guide 2 - Fermeture
-                        new Handler().postDelayed(new Runnable() {
-                            public void run() {
-                                //Guide 3 - Ouverture
-                                synergologyGuide3Snackbar = Snackbar.make(synergologyLayout, R.string.tourguide_synergology_3, Snackbar.LENGTH_INDEFINITE);
-                                synergologyGuide3Snackbar.show();
-                                //Guide 3 - Fermeture
-                                new Handler().postDelayed(new Runnable() {
-                                    public void run() {
-                                        synergologyGuide3Snackbar.dismiss();
-                                        synergologyGuide3Snackbar = null;
-                                    }
-                                }, 7000);
-                            }
-                        }, 7000);
-                    }
+                //Guide 1 - Fermeture si des attitudes sont affichées
+                if (!synergologyGuide1) {
+                    synergologyGuide1 = true;
+                    synergologyGuide1Snackbar.dismiss();
+                    synergologyGuide1Snackbar = null;
                 }
-            });
-            animations.start();
-
-            //Action Bar
-            mainActivity.setActionBarHome(hasPrevious(), currentGroupName);
+            }
         }
+
+        //Hide all other attitudes
+        for (AttitudeFragment attitudeFragment : attitudeFragments.values())
+            if (currentAttitudeFragment == null || attitudeFragment != currentAttitudeFragment)
+                attitudeFragment.changeVisibility(false, -1);
+
+        //Affichage du guide à la fin de la transition
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                //Guide 2 - Ouverture
+                if (!synergologyGuide2 && currentBodyGroup.hasAttitudes()) {
+                    synergologyGuide2 = true;
+                    Snackbar.make(synergologyLayout, R.string.tourguide_synergology_2, Snackbar.LENGTH_INDEFINITE).show();
+                    //Guide 2 - Fermeture
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            //Guide 3 - Ouverture
+                            synergologyGuide3Snackbar = Snackbar.make(synergologyLayout, R.string.tourguide_synergology_3, Snackbar.LENGTH_INDEFINITE);
+                            synergologyGuide3Snackbar.show();
+                            //Guide 3 - Fermeture
+                            new Handler().postDelayed(new Runnable() {
+                                public void run() {
+                                    synergologyGuide3Snackbar.dismiss();
+                                    synergologyGuide3Snackbar = null;
+                                }
+                            }, 10000);
+                        }
+                    }, 10000);
+                }
+            }
+        }, Settings.getAnimationSpeed());
     }
 
     /**
-     * Zoom and translate image fragment to the ImageArea
-     * @param imageArea The destination area
+     * Close the current group by updating ActionBar and nulling group & current fragment
+     * But not closing the fragment
      */
-    private void showImage(ImageArea imageArea){
-        Rect toframe, imageFrame;
-        float toFrameWidth, toframeHeight, imageFrameWidth, imageFrameHeight, imageFrameHeightVisible, imageFrameCenterX, imageFrameCenterY, toCenterX, toCenterY, toScale, toScaleX, toScaleY, visibleWidth, xShift, yShift;
-        boolean scaleFromHeight;
-
-        //Destination frame on the screen
-        if(imageArea.getId() == 100 || imageArea.getId() == 103) //Head, show in full size
-            toframe = frameFullsize;
-        else //Else small size with attitudes
-            toframe = frameSmallsize;
-        toFrameWidth = toframe.right - toframe.left;
-        toframeHeight = toframe.bottom - toframe.top;
-
-        //Areas with the full size
-        imageFrame = imageArea.getImageFrame();
-        imageFrameWidth = imageFrame.right - imageFrame.left;
-        imageFrameHeight = imageFrame.bottom - imageFrame.top;
-        imageFrameCenterX = (int)Math.floor(imageFrame.left + imageFrameWidth / 2);
-        imageFrameCenterY = (int)Math.floor(imageFrame.top + imageFrameHeight / 2);
-
-        //Scale
-        visibleWidth = imageFrameHeight * toFrameWidth / toframeHeight;
-        scaleFromHeight = visibleWidth > imageFrameWidth;
-        toScaleX = toFrameWidth / imageFrameWidth;
-        toScaleY = toframeHeight / imageFrameHeight;
-        toScale = scaleFromHeight ? toScaleY : toScaleX;
-
-        imageFrameHeightVisible = imageFrameHeight;
-        if(!scaleFromHeight)
-            imageFrameHeightVisible *= toScaleY / toScaleX;
-
-        //Translate
-        xShift = toFrameWidth == imageViewWidth ? 0 : ImageFragment.REAL_IMAGE_WIDTH * imageFrameWidth * 1.5f / ImageFragment.REAL_IMAGE_WIDTH;
-        yShift = toframeHeight == imageViewHeight ? 0 : ImageFragment.REAL_IMAGE_HEIGHT * imageFrameHeightVisible * 1.5f / ImageFragment.REAL_IMAGE_HEIGHT;
-        toCenterX = (int)Math.floor(imageFrameCenterX + xShift);
-        toCenterY = (int)Math.floor(imageFrameCenterY + yShift);
-
-        PointF toCenter = new PointF(toCenterX, toCenterY);
-
-        imageView.animateScaleAndCenter(toScale, toCenter)
-                .withDuration(Settings.getAnimationSpeed())
-                .withEasing(SubsamplingScaleImageView.EASE_IN_OUT_QUAD)
-                .withInterruptible(false)
-                .start();
-
-        //Save new state
-        if(imageArea.getId() == 100)
-            imageFragment.setCurrentAreaImage(ImageFragment.IMAGE_HEAD_AREAS);
-        else if(imageArea.getId() == 11 || imageArea.getId() == 103)
-            imageFragment.setCurrentAreaImage(ImageFragment.IMAGE_BODY_AREAS);
-
-        this.currentImageArea = imageArea;
+    private void closeCurrentGroup(){
+        currentBodyGroup = null;
+        currentAttitudeFragment = null;
+        mainActivity.setActionBarHome(hasPrevious(), "");
     }
 
-    //Update the attitudes fragment and init it
-    private void showAttitude(ImageArea imageArea){
-        ArrayList<Attitude> attitudesToView = new ArrayList<>();
-        Boolean attitudeInGroup;
-        int type, bodyPart, groupId;
-        AttitudeFragment attitudeFragment=null;
-        View attitudeFragmentView = null;
+    /**
+     * Create and store the attitude fragment related to the group
+     * or return directly the previously created one
+     */
+    private AttitudeFragment openAttitudes(BodyGroup bodyGroup){
+        AttitudeFragment attitudeFragment = null;
 
-        groupId = imageArea.getId();
-        if(groupId != currentGroupId) {
-            for (Attitude attitude : attitudes) {
-                attitudeInGroup = false;
-                //If it's the right type
-                type = attitude.getAttitudeType().getId();
-                switch (type) {
-                    case 1: //On Body
-                        bodyPart = attitude.getBodypart().getId();
-                        if (bodyPart == groupId) {
-                            attitudeInGroup = true;
-                            currentGroupName = attitude.getBodypart().getName();
-                        }
-                        break;
-                    case 2: //Handshake
-                        if (groupId == 101) {
-                            attitudeInGroup = true;
-                            currentGroupName = attitude.getAttitudeType().getName();
-                        }
-                        break;
-                    case 3: //Seated
-                        if (groupId == 102) {
-                            attitudeInGroup = true;
-                            currentGroupName = attitude.getAttitudeType().getName();
-                        }
-                        break;
-                    default:
-                }
-                if (attitudeInGroup)
-                    attitudesToView.add(attitude);
-            }
+        //If the fragment is already created
+        if(attitudeFragments.containsKey(bodyGroup))
+            attitudeFragment = attitudeFragments.get(bodyGroup);
+        else{
+            //If we have attitudes
+            if (bodyGroup.hasAttitudes()) {
+                //Create Fragment
+                attitudeFragment = AttitudeFragment.newInstance();
+                attitudeFragment.setListener(this);
+                //Add fragment
+                attitudeFragments.put(bodyGroup, attitudeFragment);
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.add(R.id.activity_synergology, attitudeFragment);
+                fragmentTransaction.commit();
+                fragmentManager.executePendingTransactions();//Fragment onCreateView called here
 
-            //If we have found attitudes
-            if (attitudesToView.size() > 0) {
-                //Get the AttitudeFragment from cache
-                attitudeFragment = attitudeFragments.get(groupId);
-                //If is not present
-                if (attitudeFragment == null) {
-                    //Create Fragment
-                    attitudeFragment = AttitudeFragment.newInstance();
-                    attitudeFragment.setListener(this);
-                    attitudeFragments.put(groupId, attitudeFragment);
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentTransaction.add(R.id.activity_synergology, attitudeFragment);
-                    fragmentTransaction.commit();
-                    fragmentManager.executePendingTransactions();//Fragment onCreateView called here
-
-                    attitudeFragmentView = attitudeFragment.getView();
-                    if(attitudeFragmentView != null) {
-                        attitudeFragmentView.getLayoutParams().width = layoutWidth;
-                        attitudeFragmentView.getLayoutParams().height = attitudeFragmentHeight;
-                        //Put attitudes into fragment
-                        attitudeFragment.init(attitudesToView);
-                    }
-                }
-                if(attitudeFragmentView == null)
-                    attitudeFragmentView = attitudeFragment.getView();
-                if(attitudeFragmentView != null) {//Init the view
+                View attitudeFragmentView = attitudeFragment.getView();
+                if(attitudeFragmentView != null) {
+                    //Set size and position
+                    attitudeFragmentView.getLayoutParams().width = layoutWidth;
+                    attitudeFragmentView.getLayoutParams().height = attitudeFragmentHeight;
                     attitudeFragmentView.setX(0);
                     attitudeFragmentView.setY(layoutHeight);
-                    attitudeFragmentView.bringToFront();
+                    //Init attitudes after view is known
+                    attitudeFragment.updateSizes(splitY, layoutHeight);
+                    attitudeFragment.init(bodyGroup);
                 }
-            } else {
-                if (groupId == 100)
-                    currentGroupName = "Tête";
-                else if(groupId == 103)
-                    currentGroupName = "";
-            }
-
-            //Animation
-            ObjectAnimator translatePrevious, hidePrevious, viewNext, translateNext;
-
-            //Hide attitude fragment
-            if (attitudeFragmentVisible != null) {
-                ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
-                //Translate to the bottom then hide
-                translatePrevious = ObjectAnimator.ofFloat(attitudeFragmentVisible.getView(), "translationY", layoutHeight);
-                translatePrevious.setDuration(Settings.getAnimationSpeed());
-                hidePrevious = ObjectAnimator.ofInt(attitudeFragmentVisible.getView(), "visibility", View.GONE);
-                hidePrevious.setDuration(0);
-                animations.play(translatePrevious);
-                animations.play(hidePrevious).after(translatePrevious);
-            }
-            //Show attitude fragment
-            if (attitudeFragment != null) {
-                ViewCompat.setElevation(attitudeFragmentView, ELEVATION_ATTITUDES_ABOVE);
-                //Translate to the top
-                viewNext = ObjectAnimator.ofInt(attitudeFragmentView, "visibility", View.VISIBLE);
-                viewNext.setDuration(0);
-                translateNext = ObjectAnimator.ofFloat(attitudeFragmentView, "translationY", layoutHeight, splitY);
-                translateNext.setDuration(Settings.getAnimationSpeed());
-                animations.play(viewNext);
-                animations.play(translateNext).after(viewNext);
-            }
-
-            //Save new state
-            if (attitudeFragment != null) {
-                attitudeFragmentVisible = attitudeFragment;
-                currentGroupId = groupId;
-            }else {
-                attitudeFragmentVisible = null;
-                currentGroupId = -1;
             }
         }
+
+        return attitudeFragment;
     }
 
     public void onImageLoaded(){
+        //Fermeture de l'écran de chargement
         mainActivity.closeSplashscreen();
     }
 
-    public void onAttitudeClick(View view) {
-        Attitude attitude = Data.getDataById(attitudes, view.getId());
+    /**
+     * Close the current group
+     */
+    @Override
+    public void onTouched() {
+        //Fragment d'attitudes
+        if(currentAttitudeFragment != null)
+            currentAttitudeFragment.changeVisibility(false, -1);
+
+        //Close group after changing visiblity of fragment
+        closeCurrentGroup();
+    }
+
+    /**
+     * Called when the fragment is closing
+     */
+    @Override
+    public void onFragmentClosing(BodyGroup bodyGroup) {
+        if(bodyGroup == currentBodyGroup)
+            closeCurrentGroup();
+    }
+
+    /**
+     * Inform the user of the location of the attitude in the retlated book
+     * @param id The attitude id
+     */
+    public void onAttitudeClick(int id) {
+        /**Attitude attitude = Data.getDataById(attitudes, id);
         if(attitude != null)
-            if(attitude.hasBooka_page())
+            if (attitude.hasBooka_page())
                 Tools.toast(mainActivity, String.format(toast_booka, attitude.getBooka_page()));
+         */
     }
 }

@@ -1,10 +1,13 @@
 package com.universio.humack;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -96,5 +99,19 @@ public class Tools {
             }else if(view instanceof ViewGroup)
                 Tools.fromHtml((ViewGroup)view);
         }
+    }
+
+    /**
+     * Launch a new ACTION_VIEW Intent to a parsed URL
+     * @param url The url where to go, should start by "http(s)://"
+     */
+    public static void openUrl(Activity activity, String url){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        activity.startActivity(browserIntent);
+    }
+
+    public static int getPixelFromDP(Context context, float dp){
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int)(dp * scale + 0.5f);
     }
 }

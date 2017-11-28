@@ -1,186 +1,259 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/activity_background"
     android:id="@+id/activity_synergology_help">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/default_spacing">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp">
+            android:gravity="center_horizontal"
+            android:text="@string/synergology_help_quote"
+            android:textStyle="bold|italic" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_definition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_filter" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_solution" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_observation" />
 
-            <TextView
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_micromovement" />
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:shrinkColumns="1">
+
+            <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:text="@string/synergology_help_quote"
-                android:textStyle="bold|italic" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_definition" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_filter" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_antidote" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_micromovement" />
+                android:layout_marginTop="@dimen/default_spacing_half">
 
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="16dp"
-                android:stretchColumns="*">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                        android:src="@drawable/icon_micromovement_caress" />
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                        android:src="@drawable/icon_micromovement_fixedness" />
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                        android:src="@drawable/icon_micromovement_itch" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:gravity="center_horizontal"
-                        android:text="@string/synergology_help_micromovement_caress"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:gravity="center_horizontal"
-                        android:text="@string/synergology_help_micromovement_fixedness"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:gravity="center_horizontal"
-                        android:text="@string/synergology_help_micromovement_itch"
-                        android:textStyle="bold" />
-                </TableRow>
-            </TableLayout>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_rules_title"
-                android:textStyle="bold"/>
-
-            <TableLayout
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
+                    android:src="@drawable/icon_micromovement_caress" />
+                <TextView
+                    android:layout_marginLeft="@dimen/default_spacing_half"
+                    android:gravity="center_vertical"
+                    android:text="@string/synergology_help_micromovement_caress" />
+            </TableRow>
+            <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing">
+                android:layout_marginTop="@dimen/default_spacing_half">
 
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
+                    android:src="@drawable/icon_micromovement_fixedness" />
+                <TextView
+                    android:layout_marginLeft="@dimen/default_spacing_half"
+                    android:gravity="center_vertical"
+                    android:text="@string/synergology_help_micromovement_fixedness" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_half">
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:gravity="center_horizontal"
-                        android:text="@string/synergology_help_rules_observation_title"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:gravity="center_horizontal"
-                        android:text="@string/synergology_help_rules_analysis_title"
-                        android:textStyle="bold" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
+                    android:src="@drawable/icon_micromovement_itch" />
+                <TextView
+                    android:layout_marginLeft="@dimen/default_spacing_half"
+                    android:gravity="center_vertical"
+                    android:text="@string/synergology_help_micromovement_itch" />
+            </TableRow>
+        </TableLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:text="@string/synergology_help_rules_observation" />
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_weight="1" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_analysis" />
 
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_weight="1" />
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_column="1"
-                        android:text="@string/synergology_help_rules_analysis" />
-                </TableRow>
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_interpretation" />
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp"
+            android:stretchColumns="*">
 
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_weight="0.5" />
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:text="@string/synergology_help_rules_both" />
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_weight="0.5" />
-                </TableRow>
-            </TableLayout>
-            <TextView
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:contentDescription="@string/synergology_help_interpretation_left_icon"
+                    android:src="@drawable/icon_hemisphere_left" />
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:contentDescription="@string/synergology_help_interpretation_right_icon"
+                    android:src="@drawable/icon_hemisphere_right" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:gravity="center_horizontal"
+                    android:text="@string/synergology_help_interpretation_left" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:gravity="center_horizontal"
+                    android:text="@string/synergology_help_interpretation_right" />
+            </TableRow>
+        </TableLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_interpretation_rest" />
+
+        <!--
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_rules_title"
+            android:textStyle="bold"/>
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/synergology_help_rules_observation_title"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/synergology_help_rules_analysis_title"
+                    android:textStyle="bold" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/synergology_help_rules_observation" />
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_weight="1" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_column="1"
+                    android:text="@string/synergology_help_rules_analysis" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:text="@string/synergology_help_rules_both" />
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5" />
+            </TableRow>
+        </TableLayout>
+    -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_application" />
+
+        <!--
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:text="@string/synergology_help_learnmore_title"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_spacing"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/activity_synergology_help_website"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_spacing"
-                android:text="@string/synergology_help_learnmore_title"
-                android:textStyle="bold"/>
-
-            <LinearLayout
+                android:text="@string/synergology_help_learnmore_website" />
+            <Button
+                android:id="@+id/activity_synergology_help_books"
                 android:layout_width="wrap_content"
-                android:layout_height="80dp"
-                android:layout_gravity="center_horizontal"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/activity_synergology_help_website"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/synergology_help_learnmore_website" />
-                <Button
-                    android:id="@+id/activity_synergology_help_books"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/default_spacing"
-                    android:text="@string/synergology_help_learnmore_books" />
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/default_spacing"
+                android:text="@string/synergology_help_learnmore_books" />
         </LinearLayout>
-    </ScrollView>
-</FrameLayout>
+        -->
+    </LinearLayout>
+</ScrollView>

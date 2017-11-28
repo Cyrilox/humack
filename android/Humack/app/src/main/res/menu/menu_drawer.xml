@@ -5,18 +5,22 @@
         <item android:id="@+id/drawer_menu_synergology"
             android:checked="true"
             android:icon="@drawable/icon_synergology"
+            android:name="@string/title_activity_synergology"
             android:title="@string/title_activity_synergology"/>
 
         <item android:id="@+id/drawer_menu_glossary"
             android:icon="@drawable/icon_glossary"
+            android:name="@string/title_activity_glossary"
             android:title="@string/title_activity_glossary"/>
 
         <item android:id="@+id/drawer_menu_settings"
             android:icon="@drawable/icon_settings"
+            android:name="@string/title_activity_settings"
             android:title="@string/title_activity_settings"/>
 
         <item android:id="@+id/drawer_menu_about"
             android:icon="@drawable/icon_about"
+            android:name="@string/title_activity_about"
             android:title="@string/title_activity_about"/>
 
     </group>

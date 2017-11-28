@@ -4,13 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -42,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     //Statiques
     public static String app_name;
     public static int DEFAULT_SPACING;
-    private static float ELEVATION_ACTIVITY, ELEVATION_ACTIVITY_ABOVE;
     public static AssetManager ASSET_MANAGER;
     private static DatabaseAO databaseAO;
     private static Settings settings;
@@ -51,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     private SplashscreenFragment splashscreen;
     private boolean splashscreenOn=false;
     private long splashStayStartTime;
+    private Handler autoCloseSplashScreen = null;
 
     //Barre d'action
     private Toolbar toolbar;
@@ -62,12 +60,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Menu navigationViewMenu;
-    private int layoutWidth, layoutHeight, frameWidth, frameHeight;
-    private FrameLayout activityMainLayout, splashscreenLayout, activitiesFrame;
+    private int frameWidth, frameHeight;
+    private FrameLayout activitiesFrame;
     private FragmentManager fragmentManager;
-
-    //Menu
-    private boolean drawerOpen;
 
     //Activités
     private int currentActivityId;
@@ -87,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         //Fragments
         fragmentManager = getFragmentManager();
         //Page de chargement
-        splashscreenLayout = (FrameLayout)findViewById(R.id.splashscreen_layout);
         showSplashscreen();
         //Initialisation
         init();
@@ -104,27 +98,21 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         //Statiques
         app_name = getResources().getString(R.string.app_name);
         DEFAULT_SPACING = (int)getResources().getDimension(R.dimen.default_spacing);
-        ELEVATION_ACTIVITY = getResources().getDimension(R.dimen.elevation_activity);
-        ELEVATION_ACTIVITY_ABOVE = ELEVATION_ACTIVITY + getResources().getDimension(R.dimen.elevation_default_spacing);
         ASSET_MANAGER = getAssets();
         databaseAO = DatabaseAO.getInstance(this.getApplicationContext());
         databaseAO.createDatabase();
         settings = new Settings(getSharedPreferences("user_preferences", 0), getResources());
 
-        //Vues
-        activityMainLayout = (FrameLayout)findViewById(R.id.activity_main);
-
         //Navigation
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.addOnLayoutChangeListener(this);
-        drawerOpen = false;
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationViewMenu = navigationView.getMenu();
         activitiesFrame = (FrameLayout)findViewById(R.id.activities_frame);
 
         //ActionBar & Drawer Handling
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarHandler(this, drawerLayout, R.string.drawer_open, R.string.drawer_close);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
 
@@ -181,8 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
 
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        layoutWidth = drawerLayout.getMeasuredWidth();
-        layoutHeight = drawerLayout.getMeasuredHeight();
         frameWidth = activitiesFrame.getMeasuredWidth();
         frameHeight = activitiesFrame.getMeasuredHeight();
     }
@@ -241,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 animations = new AnimatorSet();
                 animations.addListener(new AnimatorListenerAdapter() {
                     public void onAnimationEnd(Animator animation) {
-                        ViewCompat.setElevation(currentActivity.getView(), ELEVATION_ACTIVITY);
                         animationRunning = false;
                         if(!splashscreenOn)
                             currentActivity.onVisible();
@@ -250,10 +235,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
 
                 //Show new from the left
                 activityView = activity.getView();
-                if(activityView != null) {
+                if(activityView != null)
                     activityView.bringToFront();
-                    ViewCompat.setElevation(activityView, ELEVATION_ACTIVITY_ABOVE);
-                }
                 viewNext = ObjectAnimator.ofInt(activityView, "visibility", View.VISIBLE);
                 viewNext.setDuration(0);
                 translateNext = ObjectAnimator.ofFloat(activityView, "translationX", -frameWidth, 0);
@@ -263,8 +246,6 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 //Hide current to the left
                 if (currentActivity != null) {
                     currentActivityView = currentActivity.getView();
-                    ViewCompat.setElevation(currentActivityView, ELEVATION_ACTIVITY);
-
                     translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationX", -frameWidth);
                     translatePrevious.setDuration(instant ? 0 : Settings.getAnimationDrawerSpeed());
                     hidePrevious = ObjectAnimator.ofInt(currentActivityView, "visibility", View.GONE);
@@ -313,14 +294,29 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 fadeIn.setFillAfter(true);
                 icon.startAnimation(fadeIn);
             }
+
+            //Close it after 7 second in case of an error of the Activity
+            if(autoCloseSplashScreen != null)
+                autoCloseSplashScreen.removeCallbacksAndMessages(null);
+            autoCloseSplashScreen = new Handler();
+            autoCloseSplashScreen.postDelayed(new Runnable() {
+                public void run() {
+                    closeSplashscreen();
+                }
+            }, 7000);
         }
     }
 
     //The first ActivityFragment must call this method in order to close the splashscreen
     public void closeSplashscreen(){
         if(splashscreenOn) {
-            long stayTime, minStayTime, fadeOutDelay;
+            //Autoclose ending
+            if(autoCloseSplashScreen != null) {
+                autoCloseSplashScreen.removeCallbacksAndMessages(null);
+                autoCloseSplashScreen = null;
+            }
             //Temps minimum visible
+            long stayTime, minStayTime, fadeOutDelay;
             stayTime = System.currentTimeMillis() - splashStayStartTime;
             minStayTime = (long) getResources().getInteger(R.integer.splashscreen_minstay);
             fadeOutDelay = Math.max(0, minStayTime - stayTime)+100;
@@ -439,25 +435,5 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
             return true;
         }else
             return false;
-    }
-
-    /*** Classes & Interface ***/
-    private class ActionBarHandler extends ActionBarDrawerToggle{
-
-        public ActionBarHandler(Activity activity, DrawerLayout activityMain, int drawerOpen, int drawerClose){
-            super(activity, activityMain, drawerOpen, drawerClose);
-        }
-
-        @Override
-        public void onDrawerClosed(View drawerView) {
-            drawerOpen = false;
-            super.onDrawerClosed(drawerView);
-        }
-
-        @Override
-        public void onDrawerOpened(View drawerView) {
-            drawerOpen = true;
-            super.onDrawerOpened(drawerView);
-        }
     }
 }

@@ -6,26 +6,30 @@ import com.universio.humack.data.Data;
  * Created by Cyril Humbertclaude on 24/04/2015.
  */
 public class Attitude extends Data {
-    private int booka_page, suborder;
-    private String description, meaning;
+    private Integer booka_page, suborder;
+    private String description, meaningA, meaningB;
+    private BodyGroup bodyGroup;
     private Micromovement micromovement;
-    private Bodypart bodypart;
-    private AttitudeType attitudeType;
+    private Hemisphere hemisphere;
 
-    public Attitude(int id, String description, String meaning, int booka_page, int suborder, Micromovement micromovement, Bodypart bodypart, AttitudeType attitudeType) {
+    public Attitude(int id, String description, String meaningA, String meaningB, Integer booka_page, Integer suborder, BodyGroup bodyGroup, Micromovement micromovement, Hemisphere hemisphere) {
         this.id = id;
         this.booka_page = booka_page;
         this.suborder = suborder;
         this.description = description;
-        this.meaning = meaning;
+        this.meaningA = meaningA;
+        this.meaningB = meaningB;
+        this.bodyGroup = bodyGroup;
         this.micromovement = micromovement;
-        this.bodypart = bodypart;
-        this.attitudeType = attitudeType;
+        this.hemisphere = hemisphere;
         //Line breaks
         String lineSeparator = System.getProperty("line.separator");
         if(description != null)
             this.description = this.description.replace("\\r", "").replace("\\n", lineSeparator);
-        this.meaning = this.meaning.replace("\\r", "").replace("\\n", lineSeparator);
+        if(meaningA != null)
+            this.meaningA = this.meaningA.replace("\\r", "").replace("\\n", lineSeparator);
+        if(meaningB != null)
+            this.meaningB = this.meaningB.replace("\\r", "").replace("\\n", lineSeparator);
     }
 
     public int getBooka_page() {
@@ -40,20 +44,24 @@ public class Attitude extends Data {
         return description;
     }
 
-    public String getMeaning() {
-        return meaning;
+    public String getMeaningA() {
+        return meaningA;
+    }
+
+    public String getMeaningB() {
+        return meaningB;
+    }
+
+    public BodyGroup getBodyGroup() {
+        return bodyGroup;
     }
 
     public Micromovement getMicromovement() {
         return micromovement;
     }
 
-    public Bodypart getBodypart() {
-        return bodypart;
-    }
-
-    public AttitudeType getAttitudeType() {
-        return attitudeType;
+    public Hemisphere getHemisphere() {
+        return hemisphere;
     }
 
     public boolean hasDescription() {
@@ -61,11 +69,15 @@ public class Attitude extends Data {
     }
 
     public boolean hasBooka_page() {
-        return booka_page != 0;
+        return booka_page != null;
     }
 
     public boolean hasMicromovement() {
         return micromovement != null;
+    }
+
+    public boolean hasHemisphere() {
+        return hemisphere != null;
     }
 
     @Override
@@ -75,10 +87,11 @@ public class Attitude extends Data {
                 ", booka_page=" + booka_page +
                 ", suborder=" + suborder +
                 ", description='" + description + '\'' +
-                ", meaning='" + meaning + '\'' +
+                ", meaningA='" + meaningA + '\'' +
+                ", meaningB='" + meaningB + '\'' +
+                ", bodyGroup=" + bodyGroup +
                 ", micromovement=" + micromovement +
-                ", bodypart=" + bodypart +
-                ", attitudeType=" + attitudeType +
+                ", hemisphere=" + hemisphere +
                 '}';
     }
 }

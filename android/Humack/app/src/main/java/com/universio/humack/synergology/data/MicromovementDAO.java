@@ -28,10 +28,8 @@ public class MicromovementDAO extends DataAccessObject {
     }
 
     public Micromovement getObjectFromCursor(Cursor cursor){
-        int id;
-        String title;
-        id = cursor.getInt(COL_ID_ID);
-        title = cursor.getString(COL_TITLE_ID);
+        int id = cursor.getInt(COL_ID_ID);
+        String title = cursor.getString(COL_TITLE_ID);
 
         return new Micromovement(id, title);
     }
