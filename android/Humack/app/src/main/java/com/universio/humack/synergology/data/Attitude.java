@@ -1,5 +1,6 @@
 package com.universio.humack.synergology.data;
 
+import com.universio.humack.Tools;
 import com.universio.humack.data.Data;
 
 /**
@@ -23,13 +24,12 @@ public class Attitude extends Data {
         this.micromovement = micromovement;
         this.hemisphere = hemisphere;
         //Line breaks
-        String lineSeparator = System.getProperty("line.separator");
         if(description != null)
-            this.description = this.description.replace("\\r", "").replace("\\n", lineSeparator);
+            this.description = this.description.replace("\\r", "").replace("\\n", Tools.getLineSeparator());
         if(meaningA != null)
-            this.meaningA = this.meaningA.replace("\\r", "").replace("\\n", lineSeparator);
+            this.meaningA = this.meaningA.replace("\\r", "").replace("\\n", Tools.getLineSeparator());
         if(meaningB != null)
-            this.meaningB = this.meaningB.replace("\\r", "").replace("\\n", lineSeparator);
+            this.meaningB = this.meaningB.replace("\\r", "").replace("\\n", Tools.getLineSeparator());
     }
 
     public int getBooka_page() {

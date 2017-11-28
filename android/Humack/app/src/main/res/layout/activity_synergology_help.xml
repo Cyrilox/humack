@@ -56,7 +56,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                    android:src="@drawable/icon_micromovement_caress" />
+                    android:src="@drawable/icon_micromovement_caress_24dp" />
                 <TextView
                     android:layout_marginLeft="@dimen/default_spacing_half"
                     android:gravity="center_vertical"
@@ -71,7 +71,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                    android:src="@drawable/icon_micromovement_fixedness" />
+                    android:src="@drawable/icon_micromovement_fixedness_24dp" />
                 <TextView
                     android:layout_marginLeft="@dimen/default_spacing_half"
                     android:gravity="center_vertical"
@@ -86,7 +86,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@string/fragment_attitude_row_micromovement_icon_description"
-                    android:src="@drawable/icon_micromovement_itch" />
+                    android:src="@drawable/icon_micromovement_itch_24dp" />
                 <TextView
                     android:layout_marginLeft="@dimen/default_spacing_half"
                     android:gravity="center_vertical"
@@ -119,12 +119,12 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@string/synergology_help_interpretation_left_icon"
-                    android:src="@drawable/icon_hemisphere_left" />
+                    android:src="@drawable/icon_hemisphere_left_24dp" />
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:contentDescription="@string/synergology_help_interpretation_right_icon"
-                    android:src="@drawable/icon_hemisphere_right" />
+                    android:src="@drawable/icon_hemisphere_right_24dp" />
             </TableRow>
             <TableRow
                 android:layout_width="match_parent"

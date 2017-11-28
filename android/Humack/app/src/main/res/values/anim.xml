@@ -9,4 +9,11 @@
     <integer name="animation_speed_default">420</integer>
 
     <integer name="animation_drawer_speed">420</integer>
+
+    <integer name="animation_dialog_fade">250</integer>
+
+    <integer name="feedback_down_duration">300</integer>
+    <integer name="feedback_down_fadeout">200</integer>
+    <integer name="feedback_click_minduration">200</integer>
+    <integer name="feedback_click_fadeout">200</integer>
 </resources>

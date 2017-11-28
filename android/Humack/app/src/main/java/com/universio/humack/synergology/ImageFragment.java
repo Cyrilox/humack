@@ -26,7 +26,7 @@ import java.util.HashMap;
  */
 public class ImageFragment extends Fragment{
     //Image
-    private SubsamplingScaleImageView bodyView;
+    private BodyImageView bodyView;
 
     //Handlings
     private OnInteractionListener interactionListener = null;
@@ -69,7 +69,7 @@ public class ImageFragment extends Fragment{
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        bodyView = (SubsamplingScaleImageView)getView();
+        bodyView = (BodyImageView)getView();
         if(bodyView != null) {
             //Image
             bodyView.setImage(ImageSource.asset(IMAGE_BODY));
@@ -79,10 +79,11 @@ public class ImageFragment extends Fragment{
             bodyView.setQuickScaleEnabled(false);
             bodyView.setMinimumTileDpi(160);//OutOfMemoryError si supérieur sur device très HD
             setMode(MODE_MANUAL);
-            //Events handling
+            //Image Events
             bodyView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
                 @Override
-                public void onReady() {}
+                public void onReady() {
+                }
 
                 @Override
                 public void onImageLoaded() {
@@ -90,19 +91,23 @@ public class ImageFragment extends Fragment{
                 }
 
                 @Override
-                public void onPreviewLoadError(Exception e) {}
+                public void onPreviewLoadError(Exception e) {
+                }
 
                 @Override
-                public void onImageLoadError(Exception e) {}
+                public void onImageLoadError(Exception e) {
+                }
 
                 @Override
-                public void onTileLoadError(Exception e) {}
+                public void onTileLoadError(Exception e) {
+                }
             });
+            //Gesture Events
             gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener(){
                 @Override
                 public boolean onSingleTapConfirmed(MotionEvent event){
-                    //Click
                     if (bodyView.isReady()) {
+                        //On click transfer
                         PointF coord = bodyView.viewToSourceCoord(event.getX(), event.getY());
                         onSingleTap((int)coord.x, (int)coord.y);
                     }
@@ -122,14 +127,23 @@ public class ImageFragment extends Fragment{
                 }
 
                 @Override
-                public void onLongPress(MotionEvent e) {
-                    notifyListenerOfGesture();
-                    super.onLongPress(e);
+                public boolean onDown(MotionEvent event) {
+                    if (bodyView.isReady()) {
+                        //On down feedback
+                        PointF sourceCoord = bodyView.viewToSourceCoord(event.getX(), event.getY());
+                        bodyView.addDownFeedback(sourceCoord);
+                    }
+                    return super.onDown(event);
                 }
             });
+            gestureDetector.setIsLongpressEnabled(false);
             bodyView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
+                    //ON UP Event
+                    if(motionEvent.getAction() == MotionEvent.ACTION_UP)
+                        bodyView.removeFeedbacks();//Suppression des feedback
+                    //Other events
                     return gestureDetector.onTouchEvent(motionEvent);
                 }
             });
@@ -248,6 +262,10 @@ public class ImageFragment extends Fragment{
                     if(imageAreaHeadClicked != null)
                         imageAreaClicked = imageAreaHeadClicked;
                 }
+                //Zone valide cliqué
+                //Visual feedback filling the area
+                bodyView.addClickFeedback(imageAreaClicked.getRectangle());
+                //Transfere
                 interactionListener.onImageAreaClick(imageAreaClicked);
             }
         }
@@ -276,10 +294,11 @@ public class ImageFragment extends Fragment{
 
         setMode(MODE_ANIMATION);
 
+        //Zoom to this rectangle frame
         bodyView.animateScaleAndCenter((float)scaleAndCenter[0], (PointF)scaleAndCenter[1])
                 .withDuration(Settings.getAnimationSpeed())
                 .withEasing(SubsamplingScaleImageView.EASE_IN_OUT_QUAD)
-                .withInterruptible(true)
+                .withInterruptible(false)
                 .start();
     }
 
@@ -347,5 +366,4 @@ public class ImageFragment extends Fragment{
          */
         void onTouched();
     }
-
 }

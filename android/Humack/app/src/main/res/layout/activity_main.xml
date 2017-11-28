@@ -35,10 +35,15 @@
             android:layout_gravity="start"
             android:elevation="16dp"
             app:menu="@menu/menu_drawer"/>
-
     </android.support.v4.widget.DrawerLayout>
 
     <FrameLayout android:id="@+id/splashscreen_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <FrameLayout android:id="@+id/releasenote_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left|center_vertical" />
+    </FrameLayout>
 </FrameLayout>

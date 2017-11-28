@@ -11,6 +11,7 @@ public class Settings {
     private static SharedPreferences sharedPreferences;
     private static long animationSpeedMin, animationSpeedMax, animationSpeed, animationDrawerSpeed;
     private static boolean synergologyGuide;
+    private static int lastVersion;
 
     public Settings(SharedPreferences sharedPreferences, Resources resources){
         Settings.sharedPreferences = sharedPreferences;
@@ -24,6 +25,7 @@ public class Settings {
         animationSpeed = sharedPreferences.getLong("animation_speed", animationSpeedDefault);
         animationDrawerSpeed = (long)resources.getInteger(R.integer.animation_drawer_speed);
         synergologyGuide = sharedPreferences.getBoolean("synergology_guide", false);
+        lastVersion = sharedPreferences.getInt("last_version", BuildConfig.VERSION_CODE);
         save();
     }
 
@@ -57,11 +59,21 @@ public class Settings {
         save();
     }
 
+    public static int getLastVersion() {
+        return lastVersion;
+    }
+
+    public static void setLastVersion(int lastVersion) {
+        Settings.lastVersion = lastVersion;
+        save();
+    }
+
+    //Save to the disk
     private static void save(){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong("animation_speed", animationSpeed);
         editor.putBoolean("synergology_guide", synergologyGuide);
-
+        editor.putInt("last_version", lastVersion);
 
         editor.apply();
     }

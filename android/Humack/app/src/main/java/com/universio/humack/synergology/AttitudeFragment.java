@@ -258,16 +258,16 @@ public class AttitudeFragment extends Fragment{
                     int iconId;
                     switch (attitude.getMicromovement().getId()) {
                         case 1:
-                            iconId = R.drawable.icon_micromovement_caress;
+                            iconId = R.drawable.icon_micromovement_caress_24dp;
                             break;
                         case 2:
-                            iconId = R.drawable.icon_micromovement_fixedness;
+                            iconId = R.drawable.icon_micromovement_fixedness_24dp;
                             break;
                         case 3:
-                            iconId = R.drawable.icon_micromovement_itch;
+                            iconId = R.drawable.icon_micromovement_itch_24dp;
                             break;
                         default:
-                            iconId = R.drawable.icon_micromovement;
+                            iconId = R.drawable.icon_micromovement_24dp;
                     }
                     ImageView micromovement = (ImageView) row.findViewById(R.id.fragment_attitude_row_micromovement);
                     micromovement.setImageResource(iconId);
@@ -289,7 +289,7 @@ public class AttitudeFragment extends Fragment{
                 }else{
                     if(attitude.getHemisphere().getId() == 1 || attitude.getHemisphere().getId() == 3){
                         ImageView hemisphereLeft = (ImageView) row.findViewById(R.id.fragment_attitude_row_hemisphere_left);
-                        hemisphereLeft.setImageResource(R.drawable.icon_hemisphere_left);
+                        hemisphereLeft.setImageResource(R.drawable.icon_hemisphere_left_24dp);
                         hemisphereLeft.setVisibility(View.VISIBLE);
 
                         meaningA.setText(attitude.getMeaningA());
@@ -298,7 +298,7 @@ public class AttitudeFragment extends Fragment{
                     }
                     if(attitude.getHemisphere().getId() == 2 || attitude.getHemisphere().getId() == 3){
                         ImageView hemisphereRight = (ImageView) row.findViewById(R.id.fragment_attitude_row_hemisphere_right);
-                        hemisphereRight.setImageResource(R.drawable.icon_hemisphere_right);
+                        hemisphereRight.setImageResource(R.drawable.icon_hemisphere_right_24dp);
                         hemisphereRight.setVisibility(View.VISIBLE);
 
                         TextView meaningB = (TextView) row.findViewById(R.id.fragment_attitude_row_meaning_b);

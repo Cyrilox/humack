@@ -85,6 +85,10 @@ public class Tools {
         return true;
     }
 
+    public static String getLineSeparator(){
+        return System.getProperty("line.separator");
+    }
+
     /**
      * Trigger the Html.fromHtml method on all TextView's child and subchilds of a ViewGroup
      * @param viewGroup The ViewGroup

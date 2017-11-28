@@ -24,10 +24,13 @@ import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.universio.humack.data.Appversion;
+import com.universio.humack.data.AppversionDAO;
 import com.universio.humack.data.DatabaseAO;
 import com.universio.humack.synergology.SynergologyActivity;
 import com.universio.humack.synergology.SynergologyHelpActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -43,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     public static AssetManager ASSET_MANAGER;
     private static DatabaseAO databaseAO;
     private static Settings settings;
+
+    //Données
+    private ArrayList<Appversion> appversions;
 
     //Splashscreen
     private SplashscreenFragment splashscreen;
@@ -63,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     private int frameWidth, frameHeight;
     private FrameLayout activitiesFrame;
     private FragmentManager fragmentManager;
+    private DeadareaFragment deadareaFragment;
+    private View deadareaView;
 
     //Activités
     private int currentActivityId;
@@ -92,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 showActivity(MAIN_ACTIVITY, true);
             }
         });
+        //App version and release note
+        updateAppVersion();
     }
 
     private void init(){
@@ -99,11 +109,14 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         app_name = getResources().getString(R.string.app_name);
         DEFAULT_SPACING = (int)getResources().getDimension(R.dimen.default_spacing);
         ASSET_MANAGER = getAssets();
-        databaseAO = DatabaseAO.getInstance(this.getApplicationContext());
-        databaseAO.createDatabase();
         settings = new Settings(getSharedPreferences("user_preferences", 0), getResources());
 
-        //Navigation
+        //Database
+        databaseAO = DatabaseAO.getInstance(this.getApplicationContext());
+        databaseAO.createDatabase();
+        loadDatabase();
+
+        //Vues
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.addOnLayoutChangeListener(this);
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
@@ -120,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         if(toolbar != null){
             setSupportActionBar(toolbar);
-            toolbar.setNavigationIcon(R.drawable.ic_menu_black);
+            toolbar.setNavigationIcon(R.drawable.ic_menu_24dp);
             toolbar.setNavigationContentDescription(R.string.action_bar_home);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
@@ -165,6 +178,24 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         activities = new HashMap<>();
         activitiesBackstack = new Stack<>();
         animationRunning = false;
+
+        //Dead zone on top of activities
+        deadareaFragment = DeadareaFragment.newInstance();
+        fragmentManager.beginTransaction().add(R.id.activities_frame, deadareaFragment).commit();
+        fragmentManager.executePendingTransactions();//Fragment onCreateView called here
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadDatabase(){
+        //Accès aux données
+        AppversionDAO appversionDAO = new AppversionDAO(databaseAO);
+
+        //Récuperation des données
+        databaseAO.open();
+
+        appversions = appversionDAO.getAll(AppversionDAO.COL_CODE_NAME);
+
+        databaseAO.close();
     }
 
     @Override
@@ -209,10 +240,27 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                     //Set size to full screen and hide at the left
                     View view = activity.getView();
                     if (view != null) {
+                        //Tailles
                         view.getLayoutParams().width = frameWidth;
                         view.getLayoutParams().height = frameHeight;
-                        view.setX(-frameWidth);
-                        view.setY(0);
+                        //Position en dehors de l'écran
+                        switch (activity.getOffscreenLocation()){
+                            case ActivityFragment.OFFSCREEN_LOCATION_TOP:
+                                view.setX(0);
+                                view.setY(-frameHeight);
+                                break;
+                            case ActivityFragment.OFFSCREEN_LOCATION_RIGHT:
+                                view.setX(frameWidth);
+                                view.setY(0);
+                                break;
+                            case ActivityFragment.OFFSCREEN_LOCATION_BOTTOM:
+                                view.setX(0);
+                                view.setY(frameHeight);
+                                break;
+                            default:
+                                view.setX(-frameWidth);
+                                view.setY(0);
+                        }
                     }
                 }
             }
@@ -220,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
             //Affichage et masquage des activités
             if (activity != null) {
                 AnimatorSet animations;
-                ObjectAnimator translatePrevious, hidePrevious, viewNext, translateNext;
+                ObjectAnimator translatePrevious, translateNextX, translateNextY;
                 View activityView, currentActivityView;
 
                 //Animation
@@ -233,25 +281,40 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                     }
                 });
 
-                //Show new from the left
+                //SHOW new from offscreen
                 activityView = activity.getView();
+                //Premier plan
                 if(activityView != null)
                     activityView.bringToFront();
-                viewNext = ObjectAnimator.ofInt(activityView, "visibility", View.VISIBLE);
-                viewNext.setDuration(0);
-                translateNext = ObjectAnimator.ofFloat(activityView, "translationX", -frameWidth, 0);
-                translateNext.setDuration(instant ? 0 : Settings.getAnimationDrawerSpeed());
-                animations.play(viewNext);
-                animations.play(translateNext).after(viewNext);
-                //Hide current to the left
+                //Translation
+                translateNextX = ObjectAnimator.ofFloat(activityView, "translationX", 0);
+                translateNextY = ObjectAnimator.ofFloat(activityView, "translationY", 0);
+                translateNextX.setDuration(instant ? 0 : Settings.getAnimationDrawerSpeed());
+                translateNextY.setDuration(instant ? 0 : Settings.getAnimationDrawerSpeed());
+                //Ajout à l'animation
+                animations.play(translateNextX);
+                animations.play(translateNextY);
+
+                //HIDE current to offscreen
                 if (currentActivity != null) {
                     currentActivityView = currentActivity.getView();
-                    translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationX", -frameWidth);
+                    //Translate
+                    switch (currentActivity.getOffscreenLocation()){
+                        case ActivityFragment.OFFSCREEN_LOCATION_TOP:
+                            translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationY", -frameHeight);
+                            break;
+                        case ActivityFragment.OFFSCREEN_LOCATION_RIGHT:
+                            translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationX", frameWidth);
+                            break;
+                        case ActivityFragment.OFFSCREEN_LOCATION_BOTTOM:
+                            translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationY", frameHeight);
+                            break;
+                        default:
+                            translatePrevious = ObjectAnimator.ofFloat(currentActivityView, "translationX", -frameWidth);
+                    }
                     translatePrevious.setDuration(instant ? 0 : Settings.getAnimationDrawerSpeed());
-                    hidePrevious = ObjectAnimator.ofInt(currentActivityView, "visibility", View.GONE);
-                    hidePrevious.setDuration(0);
+                    //Ajout à l'animation
                     animations.play(translatePrevious);
-                    animations.play(hidePrevious).after(translatePrevious);
 
                     currentActivity.onHiding();
                 }
@@ -273,6 +336,11 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
                 activitiesBackstack.removeElement(activityId);
                 activitiesBackstack.push(activityId);
             }
+            //Zone morte
+            if(deadareaView == null)
+                deadareaView = deadareaFragment.getView();
+            if(deadareaView != null)
+                deadareaView.bringToFront();
         }
     }
 
@@ -356,6 +424,39 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
         }
     }
 
+    //Update the current app version and show the release note dialog a single time
+    private void updateAppVersion() {
+        int lastVersion, currentVersion;
+        lastVersion = Settings.getLastVersion();
+        currentVersion = BuildConfig.VERSION_CODE;
+        if (lastVersion != currentVersion) {
+            if(currentVersion > lastVersion)
+                showReleasenote(lastVersion+1, false);
+            Settings.setLastVersion(currentVersion);
+        }
+    }
+
+    public void showReleasenote(int fromVersion, boolean showAppversion){
+        //Changements
+        String appversionChanges = "";
+        boolean firstAdd = true;
+        for(Appversion appversion : appversions)
+            if(appversion.hasChanges() && appversion.getCode() >= fromVersion) {
+                if(!firstAdd)
+                    appversionChanges += Tools.getLineSeparator();
+                appversionChanges += appversion.getChanges();
+                firstAdd = false;
+            }
+
+        //Dialogue
+        ReleasenoteDialog releasenoteDialog = ReleasenoteDialog.newInstance();
+        if(!appversionChanges.equals(""))
+            releasenoteDialog.setAppversionChanges(appversionChanges);
+        fragmentManager.beginTransaction().add(R.id.releasenote_layout, releasenoteDialog).commit();
+        fragmentManager.executePendingTransactions();
+        releasenoteDialog.showDialog(showAppversion);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if(currentActivity != null && currentActivity.hasOptionsMenu()) {
@@ -412,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements View.OnLayoutChan
     public void setActionBarHome(boolean upEnabled, String title) {
         actionBar.setDisplayHomeAsUpEnabled(upEnabled);
         if(!upEnabled)
-            toolbar.setNavigationIcon(R.drawable.ic_menu_black);
+            toolbar.setNavigationIcon(R.drawable.ic_menu_24dp);
         this.homeUps.put(currentActivityId, upEnabled);
         if (title != null){
             if(title.equals(""))

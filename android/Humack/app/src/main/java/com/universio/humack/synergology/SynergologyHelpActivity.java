@@ -29,6 +29,9 @@ public class SynergologyHelpActivity extends ActivityFragment {
 
     @Override
     public void init(){
+        //Rattaché au dessus
+        this.offscreenLocation = OFFSCREEN_LOCATION_TOP;
+
         /**
         //Website links
         websiteUrl = getResources().getString(R.string.synergology_help_learnmore_website_url);

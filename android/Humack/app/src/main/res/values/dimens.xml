@@ -14,7 +14,12 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- Elevations -->
+    <dimen name="elevation_dialog">16dp</dimen>
     <dimen name="elevation_attitudes">16dp</dimen>
     <dimen name="elevation_attitudes_header">4dp</dimen>
 
+    <!-- Graphics -->
+    <dimen name="feedback_down_radius">30dp</dimen>
+    <dimen name="feedback_down_dot_radius">2dp</dimen>
+    <dimen name="feedback_click_corner">7dp</dimen>
 </resources>

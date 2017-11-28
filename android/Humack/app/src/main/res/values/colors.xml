@@ -8,6 +8,8 @@
     <!-- General -->
     <color name="main_background">#9E9E9E</color>
     <color name="activity_background">#F7F7F7</color>
+    <color name="dark_light">#201E21</color>
+    <color name="dialog_out_background">#AA000000</color>
 
     <!-- Activity Synergology -->
     <color name="synergology_background">#FFFFFF</color>

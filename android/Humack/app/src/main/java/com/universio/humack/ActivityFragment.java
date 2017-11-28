@@ -12,7 +12,8 @@ import android.view.ViewGroup;
  */
 abstract public class ActivityFragment extends Fragment{
     protected MainActivity mainActivity = null;
-    private int optionsMenu = -1;
+    public static final int OFFSCREEN_LOCATION_LEFT = 0, OFFSCREEN_LOCATION_TOP = 1,OFFSCREEN_LOCATION_RIGHT = 2,OFFSCREEN_LOCATION_BOTTOM = 3;
+    protected int optionsMenu = -1, offscreenLocation = OFFSCREEN_LOCATION_LEFT;
 
     /**
      * Called in order to create the view
@@ -77,5 +78,9 @@ abstract public class ActivityFragment extends Fragment{
 
     public boolean hasOptionsMenu(){
         return optionsMenu!=-1;
+    }
+
+    public int getOffscreenLocation() {
+        return offscreenLocation;
     }
 }

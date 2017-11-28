@@ -1,12 +1,20 @@
 <resources>
     <!-- General -->
     <string name="app_name">Humack</string>
-    <string name="app_version">Version 0.2.0</string>
+    <string name="app_version">Version 0.3.0</string>
     <string name="app_icon_description">Icône de l\'application</string>
-    <string name="app_description">Améliorez votre compréhension de l’être humain de façon simple, scientifique et technologique.&lt;br>&lt;br>Humack est une nouvelle plateforme qui vise à regrouper des disciplines basées sur la science de l’humain. Par exemple pour obtenir plus d’informations sur une personne ; tel que son état d’esprit, sa personnalité ou son profil.&lt;br>&lt;br>A noter que c’est un projet ouvert, ceux qui souhaitent y contribuer sont invités à envoyer un mail à « contact@humack.com ».</string>
+    <string name="app_description">Améliorez vos relations humaines grâce aux sciences humaines, de façon simple, scientifique et technologique.&lt;br>&lt;br>Humack est une nouvelle plateforme qui vise à regrouper des disciplines basées sur la science de l’humain, comme la communication non verbale, le profilage, la morphopsychologie ou le hacking social.&lt;br>&lt;br>Ces méthodes permettent de « hacker » un humain par des moyens non naturels et furtifs, par exemple pour obtenir des informations sur celui-ci ; telles que son profil et sa psychologie, son état d’esprit, sa personnalité, …&lt;br>&lt;br>Ceci permet par exemple d’améliorer une relation, de détecter un mensonge ou non dit, de se protéger, ou même de manipuler, c’est à vous de décider !&lt;br>&lt;br>A noter que c’est un projet ouvert, ceux qui souhaitent y contribuer sont invités à envoyer un mail à « contact@humack.com ».</string>
     <string name="databases_dir">/data/data/com.universio.humack/databases/</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Paramètres</string>
+
+    <!-- Release note -->
+    <string name="releasenote_newversion">Nouvelle version !</string>
+    <string name="releasenote_changes_title">Changements</string>
+    <string name="releasenote_changes_none">Aucun changement notable.</string>
+    <string name="releasenote_comingnext_title">À venir…</string>
+    <string name="releasenote_comingnext_content">- Profilage</string>
+    <string name="releasenote_ok">OK</string>
 
     <!-- Activity Main -->
     <string name="title_activity_main">MainActivity</string>
@@ -54,5 +62,8 @@
     <string name="tourguide_synergology_1">|Guide> Cliquez sur une partie du corps</string>
     <string name="tourguide_synergology_2">|Guide> Les attitudes relatives à cette partie sont visibles ci-dessus</string>
     <string name="tourguide_synergology_3">|Guide> Pour découvrir à quoi cela sert, cliquez sur l\'aide en haut</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

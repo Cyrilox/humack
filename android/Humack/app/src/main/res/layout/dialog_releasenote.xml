@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dialog_out_background"
+    android:clickable="true">
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_spacing"
+        android:layout_gravity="center"
+        android:elevation="@dimen/elevation_dialog">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/activity_background">
+
+            <TextView
+                android:id="@+id/releasenote_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:padding="@dimen/default_spacing_half"
+                android:background="@color/primary_color_dark"
+                android:textColor="@color/accent_color"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"
+                android:text="@string/releasenote_newversion" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/dark_light"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/default_spacing"
+                android:paddingRight="@dimen/default_spacing"
+                android:paddingTop="@dimen/default_spacing_half"
+                android:paddingBottom="@dimen/default_spacing_half"
+                android:background="@color/accent_color"
+                android:textStyle="bold"
+                android:text="@string/releasenote_changes_title" />
+            <TextView
+                android:id="@+id/releasenote_changes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_half"
+                android:layout_marginLeft="35dp"
+                android:layout_marginRight="@dimen/default_spacing"
+                android:text="@string/releasenote_changes_none" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing"
+                android:paddingLeft="@dimen/default_spacing"
+                android:paddingRight="@dimen/default_spacing"
+                android:paddingTop="@dimen/default_spacing_half"
+                android:paddingBottom="@dimen/default_spacing_half"
+                android:background="@color/accent_color"
+                android:textStyle="bold"
+                android:text="@string/releasenote_comingnext_title" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_half"
+                android:layout_marginLeft="35dp"
+                android:layout_marginRight="@dimen/default_spacing"
+                android:text="@string/releasenote_comingnext_content" />
+            <Button
+                android:id="@+id/releasenote_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/default_spacing_half"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/releasenote_ok"/>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
