@@ -1,6 +1,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/activity_background">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -17,7 +18,7 @@
                 android:minHeight="56dp"
                 android:paddingLeft="@dimen/default_spacing"
                 android:paddingRight="@dimen/default_spacing"
-                android:background="@color/table_header_background">
+                android:background="@color/accent_color">
 
                 <TextView
                     android:layout_width="0dp"

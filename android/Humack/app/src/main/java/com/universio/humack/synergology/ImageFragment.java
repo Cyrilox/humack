@@ -1,16 +1,17 @@
 package com.universio.humack.synergology;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.content.res.AssetManager;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.universio.humack.R;
 import com.universio.humack.Tools;
 
@@ -19,26 +20,30 @@ import java.util.ArrayList;
 /**
  * Created by Cyril Humbertclaude on 11/05/2015.
  */
-public class ImageFragment extends Fragment implements View.OnTouchListener{
-
-    //Asset manager
-    private AssetManager assetManager;
+public class ImageFragment extends Fragment{
 
     //Activity handling clicks
-    private OnInteractionListener mListener;
+    private OnInteractionListener interactionListener;
+    private SubsamplingScaleImageView bodyView;
+    private GestureDetector gestureDetector;
 
     //Images
-    public static final String IMAGE_BODY_AREAS = "human_body_areas.png", IMAGE_HEAD_AREAS = "human_body_areas_head.png";
+    public static final String IMAGE_BODY_AREAS = "human_body_areas.jpg", IMAGE_HEAD_AREAS = "human_body_areas_head.jpg";
     private String currentAreaImage;
-    public static final int REAL_IMAGE_WIDTH = 4215, REAL_IMAGE_HEIGHT = 6000, SCALED_IMAGE_WIDTH = 800, SCALED_IMAGE_HEIGHT = 1139;
+    public static final int REAL_IMAGE_WIDTH = 4215, REAL_IMAGE_HEIGHT = 6000;
+    private static final int AREA_IMAGE_WIDTH = 200, AREA_IMAGE_HEIGHT = 285;
 
     //Image areas
     private ArrayList<ImageArea> imageAreasHead, imageAreasBody, currentImageAreas;
 
+    public static ImageFragment newInstance() {
+        return new ImageFragment();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initAreas();
+        this.init();
     }
 
     @Override
@@ -49,42 +54,70 @@ public class ImageFragment extends Fragment implements View.OnTouchListener{
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ImageView bodyView = (ImageView)getView();
-        if(bodyView != null)
-            bodyView.setOnTouchListener(this);
-    }
+        bodyView = (SubsamplingScaleImageView)getView();
+        if(bodyView != null) {
+            bodyView.setImage(ImageSource.asset("human_body.jpg"));
+            bodyView.setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_OUTSIDE);
+            bodyView.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+            bodyView.setMinimumDpi(20);//Zoom minimum
+            bodyView.setPanEnabled(false);
+            bodyView.setZoomEnabled(false);
+            bodyView.setQuickScaleEnabled(false);
+            bodyView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
+                @Override
+                public void onReady() {
 
-    /**
-     * Attach and save the activity listening
-     * @param activity The activity
-     */
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement OnInteractionListener");
+                }
+
+                @Override
+                public void onImageLoaded() {
+                    bodyView.setMaximumDpi(10000);//Zoom large
+                }
+
+                @Override
+                public void onPreviewLoadError(Exception e) {
+
+                }
+
+                @Override
+                public void onImageLoadError(Exception e) {
+
+                }
+
+                @Override
+                public void onTileLoadError(Exception e) {
+
+                }
+            });
+
+            gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener(){
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent event){
+                    if (bodyView.isReady()) {
+                        PointF coord = bodyView.viewToSourceCoord(event.getX(), event.getY());
+                        onSingleTap((int)coord.x, (int)coord.y);
+                    }
+                    return true;
+                }
+            });
+            bodyView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    return gestureDetector.onTouchEvent(motionEvent);
+                }
+            });
         }
     }
 
-    /**
-     * Detach and unsave the activity listening
-     */
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    public void setAssetManager(AssetManager assetManager){
-        this.assetManager = assetManager;
+    public void setListener(OnInteractionListener interactionListener){
+        this.interactionListener = interactionListener;
     }
 
     /**
      * Init imageAreasHead and imageAreasBody lists
      */
-    private void initAreas(){
+    private void init(){
+        interactionListener = null;
         if(imageAreasHead == null) {
             imageAreasHead = new ArrayList<>();
             //Ids come from the Excel file in the "listes" tab
@@ -125,24 +158,25 @@ public class ImageFragment extends Fragment implements View.OnTouchListener{
     }
 
     /**
-     * Triggered when clicking on the images fragment
-     * Search the corresponding ImageArea and send it to the listener Activity
-     * @param view The view clicked
+     *
      * @param event The MotionEvent object containing full information about
      *              the event.
      * @return True if the listener has consumed the event, false otherwise.
      */
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        if (mListener != null && event.getAction() == MotionEvent.ACTION_UP) {
+    /**
+     * Triggered when clicking on the images fragment
+     * Search the corresponding ImageArea and send it to the listener Activity
+     * @param xCoord The X coordinate of the real image
+     * @param yCoord The Y coordinate of the real image
+     */
+    public void onSingleTap(int xCoord, int yCoord) {
+        if (interactionListener != null) {
             //Coordinates
-            int xCoord, yCoord, realXCoord, realYCoord;
-            xCoord = (int)event.getX();
-            yCoord = (int)event.getY();
-            realXCoord = SCALED_IMAGE_WIDTH * xCoord / view.getMeasuredWidth();
-            realYCoord = SCALED_IMAGE_HEIGHT * yCoord / view.getMeasuredHeight();
+            int realXCoord, realYCoord;
+            realXCoord = AREA_IMAGE_WIDTH * xCoord / REAL_IMAGE_WIDTH;
+            realYCoord = AREA_IMAGE_HEIGHT * yCoord / REAL_IMAGE_HEIGHT;
             //Pixel color
-            int pixelColor = Tools.getPixelColor(assetManager, currentAreaImage, realXCoord, realYCoord);
+            int pixelColor = Tools.getPixelColor(currentAreaImage, realXCoord, realYCoord);
             //Search the area clicked
             ImageArea imageAreaClicked = null;
             for (ImageArea imageArea : currentImageAreas){
@@ -154,9 +188,8 @@ public class ImageFragment extends Fragment implements View.OnTouchListener{
             }
             //Only if an area is found
             if (imageAreaClicked != null)
-                mListener.onImageAreaClick(imageAreaClicked);
+                interactionListener.onImageAreaClick(imageAreaClicked);
         }
-        return true;
     }
 
     /**
@@ -167,7 +200,7 @@ public class ImageFragment extends Fragment implements View.OnTouchListener{
          * A click on an image part
          * @param imageArea The ImageArea clicked
          */
-        public void onImageAreaClick(ImageArea imageArea);
+        void onImageAreaClick(ImageArea imageArea);
     }
 
     /**

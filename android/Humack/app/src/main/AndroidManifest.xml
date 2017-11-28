@@ -12,48 +12,12 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTask" >
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".synergology.SynergologyActivity"
-            android:icon="@drawable/icon_synergology"
-            android:label="@string/title_activity_synergology"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".synergology.SynergologyHelpActivity"
-            android:icon="@drawable/icon_synergology"
-            android:label="@string/title_activity_synergology_help"
-            android:launchMode="singleTask"
-            android:parentActivityName=".synergology.SynergologyActivity"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.universio.humack.synergology.SynergologyActivity" />
-        </activity>
-        <activity
-            android:name=".GlossaryActivity"
-            android:icon="@drawable/icon_glossary"
-            android:label="@string/title_activity_glossary"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".SettingsActivity"
-            android:icon="@drawable/icon_settings"
-            android:label="@string/title_activity_settings"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".AboutActivity"
-            android:label="@string/title_activity_about" >
         </activity>
     </application>
 

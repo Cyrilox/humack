@@ -1,7 +1,7 @@
 <resources>
     <!-- General -->
     <string name="app_name">Humack</string>
-    <string name="app_version">Version 0.0.1</string>
+    <string name="app_version">Version 0.0.2</string>
     <string name="app_icon_description">Icône de l\'application</string>
     <string name="app_description">Améliorez votre compréhension de l’être humain de façon simple, scientifique et technologique.&lt;br>&lt;br>Humack vise à réunir et interconnecté un ensemble de disciplines puissantes orientées sur la science de l’humain, tel que la synergologie, la morphopsychologie ou le profilage.&lt;br>&lt;br>Véritablement accessible aux plus néophytes, cette application vous fera découvrir des disciplines d’experts de façon intuitive.&lt;br>&lt;br>L’intérêt ? Booster vos relations, détecter des mensonges voir manipuler c’est à vous de décider, et tout cela furtivement !</string>
     <string name="databases_dir">/data/data/com.universio.humack/databases/</string>
@@ -12,14 +12,9 @@
     <string name="title_activity_main">MainActivity</string>
 
     <!-- Drawer -->
+    <string name="action_bar_home">Menu de l\'application</string>
     <string name="drawer_open">Tiroir ouvert</string>
     <string name="drawer_close">Tiroir fermé</string>
-    <string-array name="drawer_menu_titles">
-        <item>Attitude</item>
-        <item>Glossaire</item>
-        <item>Paramètres</item>
-        <item>A propos</item>
-    </string-array>
 
     <!-- Activity Synergology -->
     <string name="title_activity_synergology">Attitude</string>
@@ -35,7 +30,7 @@
     <string name="fragment_attitude_row_micromovement_icon_description">Un micromouvement</string>
 
     <!-- Activity Synergology Help -->
-    <string name="title_activity_synergology_help">La synergologie</string>
+    <string name="title_activity_synergology_help">Synergologie</string>
     <string name="synergology_help_quote">« L’art de rétablir la vérité des Hommes via le décodage de leurs attitudes »</string>
     <string name="synergology_help_definition">&lt;b>Définition&lt;/b>&lt;br>La synergologie est une discipline qui vise à observer puis analyser l’attitude d’une personne afin de comprendre qu’elle est sont véritable état d’esprit, celui-ci étant poussé dans la société à mettre des filtres entre lui et son interlocuteur pour être plus efficace.</string>
     <string name="synergology_help_filter">&lt;b>Filtre&lt;/b>&lt;br>Comportement anormal de la personne, inconscient ou non, entraînant un mensonge ou silence permettant d’être plus efficace au quotidien.</string>
@@ -67,4 +62,7 @@
 
     <!-- Activity About -->
     <string name="title_activity_about">A propos</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

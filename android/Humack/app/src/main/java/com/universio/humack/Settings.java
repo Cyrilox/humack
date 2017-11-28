@@ -9,7 +9,7 @@ import android.content.res.Resources;
 public class Settings {
 
     private static SharedPreferences sharedPreferences;
-    private static long animationSpeedMin, animationSpeedMax, animationSpeed;
+    private static long animationSpeedMin, animationSpeedMax, animationSpeed, animationDrawerSpeed;
 
     public Settings(SharedPreferences sharedPreferences, Resources resources){
         Settings.sharedPreferences = sharedPreferences;
@@ -21,6 +21,7 @@ public class Settings {
         animationSpeedMax = (long)resources.getInteger(R.integer.animation_speed_max);
         long animationSpeedDefault = (long)resources.getInteger(R.integer.animation_speed_default);
         animationSpeed = sharedPreferences.getLong("animation_speed", animationSpeedDefault);
+        animationDrawerSpeed = (long)resources.getInteger(R.integer.animation_drawer_speed);
         save();
     }
 
@@ -34,6 +35,10 @@ public class Settings {
 
     public static long getAnimationSpeed() {
         return animationSpeed;
+    }
+
+    public static long getAnimationDrawerSpeed() {
+        return animationDrawerSpeed;
     }
 
     public static void setAnimationSpeed(long animationSpeed) {

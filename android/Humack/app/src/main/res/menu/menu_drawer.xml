@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+
+        <item android:id="@+id/drawer_menu_synergology"
+            android:checked="true"
+            android:icon="@drawable/icon_synergology"
+            android:title="@string/title_activity_synergology"/>
+
+        <item android:id="@+id/drawer_menu_glossary"
+            android:icon="@drawable/icon_glossary"
+            android:title="@string/title_activity_glossary"/>
+
+        <item android:id="@+id/drawer_menu_settings"
+            android:icon="@drawable/icon_settings"
+            android:title="@string/title_activity_settings"/>
+
+        <item android:id="@+id/drawer_menu_about"
+            android:icon="@drawable/icon_about"
+            android:title="@string/title_activity_about"/>
+
+    </group>
+</menu>

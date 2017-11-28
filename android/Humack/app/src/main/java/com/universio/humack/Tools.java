@@ -1,7 +1,6 @@
 package com.universio.humack;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Color;
@@ -32,20 +31,19 @@ public class Tools {
 
     /**
      * Get the pixel color of an image placed into asset at given coordinates
-     * @param assetManager The asset manager
      * @param imageName The image name
      * @param x The X coordinate
      * @param y The Y coordinate
      * @return The RGB number representing the color
      */
-    public static int getPixelColor(AssetManager assetManager, String imageName, int x, int y) {
+    public static int getPixelColor(String imageName, int x, int y) {
         int color = -1;
         Boolean outCoordinate = false;
         if(x < 0 || y < 0)
             outCoordinate = true;
         else {
             try {
-                InputStream inputStream = assetManager.open(imageName);
+                InputStream inputStream = MainActivity.ASSET_MANAGER.open(imageName);
                 BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(inputStream, true);
                 if (decoder != null) {
                     if(x >= decoder.getWidth() || y >= decoder.getHeight())

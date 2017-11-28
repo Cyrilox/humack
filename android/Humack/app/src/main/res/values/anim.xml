@@ -2,5 +2,7 @@
 <resources>
     <integer name="animation_speed_min">200</integer>
     <integer name="animation_speed_max">800</integer>
-    <integer name="animation_speed_default">500</integer>
+    <integer name="animation_speed_default">420</integer>
+
+    <integer name="animation_drawer_speed">420</integer>
 </resources>

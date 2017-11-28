@@ -1,8 +1,5 @@
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView xmlns:android="http://schemas.android.com/apk/res/android"
     android:contentDescription="@string/fragment_image_description"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:adjustViewBounds="true"
-    android:transformPivotX="0px"
-    android:transformPivotY="0px"
-    android:src="@drawable/human_body"/>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_image"/>

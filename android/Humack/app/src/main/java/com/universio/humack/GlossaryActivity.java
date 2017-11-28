@@ -1,7 +1,7 @@
 package com.universio.humack;
 
-import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -15,46 +15,63 @@ import java.util.ArrayList;
 /**
  * Created by Cyril Humbertclaude on 08/06/2015.
  */
-public class GlossaryActivity extends BaseActivity {
+public class GlossaryActivity extends ActivityFragment {
 
     //Glossaire
     private ArrayList<Glossary> glossarys;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState){
-        setupActivity(R.layout.activity_glossary, R.drawable.icon_glossary);
-        super.onCreate(savedInstanceState);
+    public static GlossaryActivity newInstance(){
+        return new GlossaryActivity();
     }
 
-    protected void init(){
-        loadDatabase();
+    /**
+     * Called in order to create the view
+     * @return The layout resource id
+     */
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.activity_glossary;
+    }
 
-        LayoutInflater inflater = getLayoutInflater();
+    @Override
+    public void init(){
+        loadDatabase();
+        View rootView = getView();
+
+        LayoutInflater inflater = mainActivity.getLayoutInflater();
 
         //Table
-        TableLayout tableLayout = (TableLayout)findViewById(R.id.activity_glossary_table);
-        int oddBackgroundColor = getResources().getColor(R.color.table_row_odd_background);
-        boolean odd = false;
-        for(Glossary glossary : glossarys){
-            TableRow tableRow = (TableRow)inflater.inflate(R.layout.activity_glossary_row, null);
+        TableLayout tableLayout;
+        if(rootView != null) {
+            tableLayout = (TableLayout) rootView.findViewById(R.id.activity_glossary_table);
+            int oddBackgroundColor = getResources().getColor(R.color.table_row_odd_background);
+            boolean odd = false;
+            for (Glossary glossary : glossarys) {
+                TableRow tableRow = (TableRow) inflater.inflate(R.layout.activity_glossary_row, null);
 
-            TextView termView = (TextView)tableRow.findViewById(R.id.activity_glossary_term);
-            termView.setText(glossary.getTerm());
-            TextView definitionView = (TextView)tableRow.findViewById(R.id.activity_glossary_definition);
-            definitionView.setText(glossary.getDefinition());
+                TextView termView = (TextView) tableRow.findViewById(R.id.activity_glossary_term);
+                termView.setText(glossary.getTerm());
+                TextView definitionView = (TextView) tableRow.findViewById(R.id.activity_glossary_definition);
+                definitionView.setText(glossary.getDefinition());
 
-            //Style
-            if(odd)
-                tableRow.setBackgroundColor(oddBackgroundColor);
-            odd = !odd;
+                //Style
+                if (odd)
+                    tableRow.setBackgroundColor(oddBackgroundColor);
+                odd = !odd;
 
-            tableLayout.addView(tableRow);
+                tableLayout.addView(tableRow);
+            }
         }
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return false;
     }
 
     private void loadDatabase(){
         //Glossary
-        DatabaseAO databaseAO = BaseActivity.getDatabaseAO();
+        DatabaseAO databaseAO = MainActivity.getDatabaseAO();
         GlossaryDAO glossaryDAO = new GlossaryDAO(databaseAO);
         databaseAO.open();
         glossarys = glossaryDAO.getAll(GlossaryDAO.COL_TERM_NAME);

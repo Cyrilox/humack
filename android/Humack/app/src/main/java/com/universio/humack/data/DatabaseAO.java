@@ -15,13 +15,23 @@ import java.io.OutputStream;
  * Created by Cyril Humbertclaude on 24/04/2015.
  */
 public class DatabaseAO extends SQLiteOpenHelper{
+
+    private static DatabaseAO instance;
+
     private static final int VERSION = 1;
     private static final String DB_NAME = "humack.db";
     private final String DB_PATH;
     private Context context;
     private SQLiteDatabase database = null;
 
-    public DatabaseAO(Context context) {
+    public static synchronized DatabaseAO getInstance(Context context) {
+        if (instance == null)
+            instance = new DatabaseAO(context);
+
+        return instance;
+    }
+
+    private DatabaseAO(Context context) {
         super(context, DB_NAME, null, VERSION);
         this.context = context;
         DB_PATH = context.getString(R.string.databases_dir) + DB_NAME;

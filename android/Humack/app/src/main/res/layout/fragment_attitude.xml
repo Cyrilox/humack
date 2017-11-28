@@ -11,16 +11,10 @@
         android:id="@+id/fragment_attitude_table">
 
         <TableRow
-            android:minHeight="12dp"
-            android:background="#757575"
-            android:id="@+id/fragment_attitude_band">
-        </TableRow>
-
-        <TableRow
             android:minHeight="40dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:background="@color/table_header_background" >
+            android:background="@color/accent_color" >
 
             <TextView
                 android:id="@+id/fragment_attitude_header_attitude"

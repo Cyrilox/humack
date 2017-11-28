@@ -1,29 +1,44 @@
 package com.universio.humack;
 
-import android.os.Bundle;
+import android.view.View;
 import android.widget.SeekBar;
 
 /**
  * Created by Cyril Humbertclaude on 08/06/2015.
  */
-public class SettingsActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener{
+public class SettingsActivity extends ActivityFragment implements SeekBar.OnSeekBarChangeListener{
 
     private SeekBar animationSpeedBar;
     private long animationSpeedRange;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setupActivity(R.layout.activity_settings, R.drawable.icon_settings);
-        super.onCreate(savedInstanceState);
+    public static SettingsActivity newInstance(){
+        return new SettingsActivity();
     }
 
-    protected void init(){
+    /**
+     * Called in order to create the view
+     * @return The layout resource id
+     */
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.activity_settings;
+    }
+
+    @Override
+    public void init(){
+        View rootView = getView();
         //Animations speed
         animationSpeedRange = Settings.getAnimationSpeedMax() - Settings.getAnimationSpeedMin();
-        animationSpeedBar = (SeekBar)findViewById(R.id.activity_settings_animation_speed);
+        if(rootView != null)
+            animationSpeedBar = (SeekBar)rootView.findViewById(R.id.activity_settings_animation_speed);
         int animationSpeedProgress = 100 - Math.round((Settings.getAnimationSpeed() - Settings.getAnimationSpeedMin()) * 100 / animationSpeedRange);
         animationSpeedBar.setProgress(animationSpeedProgress);
         animationSpeedBar.setOnSeekBarChangeListener(this);
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return false;
     }
 
     @Override

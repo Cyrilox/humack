@@ -1,6 +1,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/activity_background"
     android:id="@+id/activity_synergology_help">
 
     <ScrollView
@@ -169,16 +170,16 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/activity_synergology_help_website"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/synergology_help_learnmore_website"
-                    android:onClick="openWebsite" />
+                    android:text="@string/synergology_help_learnmore_website" />
                 <Button
+                    android:id="@+id/activity_synergology_help_books"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/default_spacing"
-                    android:text="@string/synergology_help_learnmore_books"
-                    android:onClick="openBooks" />
+                    android:text="@string/synergology_help_learnmore_books" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

@@ -4,22 +4,19 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Intent;
+import android.graphics.PointF;
 import android.graphics.Rect;
-import android.os.Bundle;
-import android.view.Menu;
+import android.support.v4.view.ViewCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.universio.humack.BaseActivity;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+import com.universio.humack.ActivityFragment;
+import com.universio.humack.MainActivity;
 import com.universio.humack.R;
 import com.universio.humack.Settings;
 import com.universio.humack.Tools;
@@ -37,67 +34,75 @@ import java.util.Hashtable;
 /**
  * Created by Cyril Humbertclaude on 04/05/2015.
  */
-public class SynergologyActivity extends BaseActivity implements View.OnLayoutChangeListener, ImageFragment.OnInteractionListener{
+public class SynergologyActivity extends ActivityFragment implements View.OnLayoutChangeListener, ImageFragment.OnInteractionListener, AttitudeFragment.OnInteractionListener{
+
     //Données
     private ArrayList<Attitude> attitudes;
 
     //General
     private int currentGroupId;
     private String currentGroupName = null, toast_booka;
+    private float ELEVATION_ATTITUDES, ELEVATION_ATTITUDES_ABOVE;
 
     //Fragments
     private FragmentManager fragmentManager;
     private ImageFragment imageFragment;
-    private ImageView imageView;
-    private int imageViewWidth, imageViewHeight, centeringSpaceWidth, centeringSpaceHeight;
+    private SubsamplingScaleImageView imageView;
+    private int imageViewWidth, imageViewHeight;
     private ImageArea currentImageArea;
     private Hashtable<Integer, AttitudeFragment> attitudeFragments;
     private AttitudeFragment attitudeFragmentVisible;
-    private int attitudeFragmentHeight;
 
     //Views and Size
     private FrameLayout synergologyLayout;
-    private int layoutWidth, layoutHeight, splitY;
+    private int layoutWidth, layoutHeight, splitY, attitudeFragmentHeight;
+    private float splitYRatio;
     private Rect frameFullsize, frameSmallsize;
-
-    //Aide
-    private Intent synergologyHelpActivity;
 
     //Animation
     private AnimatorSet animations;
     private boolean animationRunning;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setupActivity(R.layout.activity_synergology, R.drawable.icon_synergology);
-        super.onCreate(savedInstanceState);
+    public static SynergologyActivity newInstance(){
+        return new SynergologyActivity();
     }
 
-    protected void init(){
-        //General
-        toast_booka = getResources().getString(R.string.synergology_toast_page_booka);
+    /**
+     * Called in order to create the view
+     * @return The layout resource id
+     */
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.activity_synergology;
+    }
 
-        //Universal Image Loader
-        //Create global configuration and initialize ImageLoader with this config
-        ImageLoaderConfiguration universalImaLoaConfig = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(universalImaLoaConfig);
+    @Override
+    public void init(){
+        //General
+        setOptionsMenu(R.menu.menu_synergology);
+        toast_booka = getResources().getString(R.string.synergology_toast_page_booka);
+        ELEVATION_ATTITUDES = getResources().getDimension(R.dimen.elevation_attitudes);
+        ELEVATION_ATTITUDES_ABOVE = ELEVATION_ATTITUDES + getResources().getDimension(R.dimen.elevation_default_spacing);
 
         //Load the database
         loadDatabase();
 
         //Main layout
-        synergologyLayout = (FrameLayout)findViewById(R.id.activity_synergology);
-        synergologyLayout.addOnLayoutChangeListener(this);
-        synergologyHelpActivity = new Intent(this, SynergologyHelpActivity.class);
+        synergologyLayout = (FrameLayout)getView();
+        if(synergologyLayout != null)
+            synergologyLayout.addOnLayoutChangeListener(this);
+        splitYRatio = 0.25f;
         splitY = 200;
 
         //Fragments
-        fragmentManager = getFragmentManager();
+        fragmentManager = mainActivity.getFragmentManager();
 
         //Body Image Fragment
-        imageFragment = (ImageFragment)fragmentManager.findFragmentById(R.id.fragment_image);
-        imageFragment.setAssetManager(getAssets());
-        imageView = (ImageView)imageFragment.getView();
+        imageFragment = ImageFragment.newInstance();
+        fragmentManager.beginTransaction().add(R.id.activity_synergology, imageFragment).commit();
+        fragmentManager.executePendingTransactions();//Fragment onCreateView called here
+        imageFragment.setListener(this);
+        imageView = (SubsamplingScaleImageView)getView().findViewById(R.id.fragment_image);
 
         //Attitude Fragment
         attitudeFragments = new Hashtable<>();
@@ -111,7 +116,7 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
     @SuppressWarnings("unchecked")
     private void loadDatabase(){
         //Base unique
-        DatabaseAO databaseAO = BaseActivity.getDatabaseAO();
+        DatabaseAO databaseAO = MainActivity.getDatabaseAO();
 
         //Accès aux données
         AttitudeTypeDAO attitudeTypeDAO = new AttitudeTypeDAO(databaseAO);
@@ -138,48 +143,42 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
         layoutWidth = synergologyLayout.getMeasuredWidth();
         layoutHeight = synergologyLayout.getMeasuredHeight();
-        splitY = (int)(Math.floor(layoutHeight * 25 / 100));
-        frameFullsize = new Rect(left, top, left + layoutWidth, top + layoutHeight);
-        frameSmallsize = new Rect(left, top, left + layoutWidth, top + splitY);
+        splitY = (int)(Math.floor(layoutHeight * splitYRatio));
+        attitudeFragmentHeight = layoutHeight - splitY;
         imageViewWidth = imageView.getMeasuredWidth();
         imageViewHeight = imageView.getMeasuredHeight();
-        attitudeFragmentHeight = layoutHeight - splitY;
-        centeringSpaceWidth = (layoutWidth - imageViewWidth) / 2;
-        centeringSpaceHeight = (layoutHeight - imageViewHeight) / 2;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_synergology, menu);
-        return true;
+        frameFullsize = new Rect(left, top, left + imageViewWidth, top + imageViewHeight);
+        frameSmallsize = new Rect(left, top, left + imageViewWidth, top + splitY);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //Si on ferme le drawer
-        if(closeDrawer())
-            return true; //on ne fait que cela
-        else{ //sinon
-            switch (item.getItemId()) {
-                case R.id.action_help_synergology://on lance l'aide sur la synergologie
-                    startActivity(synergologyHelpActivity);
+        int itemId = item != null ? item.getItemId() : android.R.id.home;
+        switch (itemId){
+            case R.id.action_help_synergology:
+                mainActivity.showActivity(MainActivity.ACTIVITY_SYNERGOLOGY_HELP, false);
+                return true;
+            case android.R.id.home:
+                if(hasPrevious()){
+                    goBack();
                     return true;
-                case android.R.id.home://ou on dézoom si possible
-                    if(hasPrevious()) {
-                        goBack();
-                        return true;
-                    }
-                default://dans les autres cas
-                    return super.onOptionsItemSelected(item);//toggle du drawer
-            }
+                }
+            default:
+                return false;
         }
     }
 
     @Override
-    public void onBackPressed(){
-        if(!closeDrawer())
-            if(hasPrevious())
-                goBack();
+    public boolean onBackPressed() {
+        if(hasPrevious()){
+            goBack();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasPrevious(){
+        return (currentImageArea != null) && (currentImageArea.getId() != 103);
     }
 
     private void goBack(){
@@ -218,12 +217,14 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
             animations.setInterpolator(new AccelerateDecelerateInterpolator());
             animations.addListener(new AnimatorListenerAdapter(){
                 public void onAnimationEnd(Animator animation){
+                    if(attitudeFragmentVisible != null)
+                        ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
                     animationRunning = false;
                 }});
             animations.start();
 
             //Action Bar
-            setActionBarHome(hasPrevious(), currentGroupName);
+            mainActivity.setActionBarHome(hasPrevious(), currentGroupName);
         }
     }
 
@@ -233,12 +234,11 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
      */
     private void showImage(ImageArea imageArea){
         Rect toframe, imageFrame;
-        int toFrameWidth, toframeHeight, imageFrameWidth, imageFrameHeight, toLayoutWidth, toLayoutFrameWidth, toLayoutHeight;
-        int toImageLeft, toImageTop, toImageWidth, toImageHeight, translationX, translationY;
+        float toFrameWidth, toframeHeight, imageFrameWidth, imageFrameHeight, imageFrameHeightVisible, imageFrameCenterX, imageFrameCenterY, toCenterX, toCenterY, toScale, toScaleX, toScaleY, visibleWidth, xShift, yShift;
+        boolean scaleFromHeight;
 
         //Destination frame on the screen
-        if(imageArea.getId() == 100 || imageArea.getId() == 103) //Head
-            //Show in full size
+        if(imageArea.getId() == 100 || imageArea.getId() == 103) //Head, show in full size
             toframe = frameFullsize;
         else //Else small size with attitudes
             toframe = frameSmallsize;
@@ -249,40 +249,34 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
         imageFrame = imageArea.getImageFrame();
         imageFrameWidth = imageFrame.right - imageFrame.left;
         imageFrameHeight = imageFrame.bottom - imageFrame.top;
+        imageFrameCenterX = (int)Math.floor(imageFrame.left + imageFrameWidth / 2);
+        imageFrameCenterY = (int)Math.floor(imageFrame.top + imageFrameHeight / 2);
 
-        //Layout and image destination
-        toLayoutHeight = (int)Math.floor(ImageFragment.REAL_IMAGE_HEIGHT * toframeHeight / imageFrameHeight);
-        toLayoutWidth = (int)Math.floor(ImageFragment.REAL_IMAGE_WIDTH * toLayoutHeight / ImageFragment.REAL_IMAGE_HEIGHT);
-        toLayoutFrameWidth = (int)Math.floor(toLayoutWidth * imageFrameWidth / ImageFragment.REAL_IMAGE_WIDTH);
-        if(toLayoutFrameWidth > toFrameWidth) {
-            toLayoutWidth = (int) Math.floor(ImageFragment.REAL_IMAGE_WIDTH * toFrameWidth / imageFrameWidth);
-            toLayoutHeight = (int) Math.floor(ImageFragment.REAL_IMAGE_HEIGHT * toLayoutWidth / ImageFragment.REAL_IMAGE_WIDTH);
-        }
+        //Scale
+        visibleWidth = imageFrameHeight * toFrameWidth / toframeHeight;
+        scaleFromHeight = visibleWidth > imageFrameWidth;
+        toScaleX = toFrameWidth / imageFrameWidth;
+        toScaleY = toframeHeight / imageFrameHeight;
+        toScale = scaleFromHeight ? toScaleY : toScaleX;
 
-        toImageLeft = imageFrame.left * toLayoutWidth / ImageFragment.REAL_IMAGE_WIDTH;
-        toImageTop = imageFrame.top * toLayoutHeight / ImageFragment.REAL_IMAGE_HEIGHT;
-        toImageWidth = toLayoutWidth * imageFrameWidth / ImageFragment.REAL_IMAGE_WIDTH;
-        toImageHeight = toLayoutHeight * imageFrameHeight / ImageFragment.REAL_IMAGE_HEIGHT;
+        imageFrameHeightVisible = imageFrameHeight;
+        if(!scaleFromHeight)
+            imageFrameHeightVisible *= toScaleY / toScaleX;
 
-        translationX = - toImageLeft + (toFrameWidth - toImageWidth) / 2 - centeringSpaceWidth;
-        translationY = - toImageTop + (toframeHeight - toImageHeight) / 2 - centeringSpaceHeight;
+        //Translate
+        xShift = toFrameWidth == imageViewWidth ? 0 : ImageFragment.REAL_IMAGE_WIDTH * imageFrameWidth * 1.5f / ImageFragment.REAL_IMAGE_WIDTH;
+        yShift = toframeHeight == imageViewHeight ? 0 : ImageFragment.REAL_IMAGE_HEIGHT * imageFrameHeightVisible * 1.5f / ImageFragment.REAL_IMAGE_HEIGHT;
+        toCenterX = (int)Math.floor(imageFrameCenterX + xShift);
+        toCenterY = (int)Math.floor(imageFrameCenterY + yShift);
 
-        //Scale values
-        float toXScale, toYScale;
-        toXScale = (float)toLayoutWidth / imageViewWidth;
-        toYScale = (float)toLayoutHeight / imageViewHeight;
+        PointF toCenter = new PointF(toCenterX, toCenterY);
 
-        //Animation
-        PropertyValuesHolder scaleX, scaleY, translateX, translateY;
-        scaleX = PropertyValuesHolder.ofFloat("scaleX", toXScale);
-        scaleY = PropertyValuesHolder.ofFloat("scaleY", toYScale);
-        translateX = PropertyValuesHolder.ofFloat("translationX", translationX);
-        translateY = PropertyValuesHolder.ofFloat("translationY", translationY);
+        imageView.animateScaleAndCenter(toScale, toCenter)
+                .withDuration(Settings.getAnimationSpeed())
+                .withEasing(SubsamplingScaleImageView.EASE_IN_OUT_QUAD)
+                .withInterruptible(false)
+                .start();
 
-        ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(imageView, scaleX, scaleY, translateX, translateY);
-        animator.setDuration(Settings.getAnimationSpeed());
-        animations.play(animator);
-        
         //Save new state
         if(imageArea.getId() == 100)
             imageFragment.setCurrentAreaImage(ImageFragment.IMAGE_HEAD_AREAS);
@@ -340,19 +334,24 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
                 if (attitudeFragment == null) {
                     //Create Fragment
                     attitudeFragment = AttitudeFragment.newInstance();
+                    attitudeFragment.setListener(this);
                     attitudeFragments.put(groupId, attitudeFragment);
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.add(R.id.activity_synergology, attitudeFragment);
                     fragmentTransaction.commit();
-                    fragmentManager.executePendingTransactions();
+                    fragmentManager.executePendingTransactions();//Fragment onCreateView called here
+
+                    attitudeFragmentView = attitudeFragment.getView();
+                    if(attitudeFragmentView != null) {
+                        attitudeFragmentView.getLayoutParams().width = layoutWidth;
+                        attitudeFragmentView.getLayoutParams().height = attitudeFragmentHeight;
+                        //Put attitudes into fragment
+                        attitudeFragment.init(attitudesToView);
+                    }
                 }
-                attitudeFragmentView = attitudeFragment.getView();
-                if(attitudeFragmentView != null) {
-                    attitudeFragmentView.getLayoutParams().width = layoutWidth;
-                    attitudeFragmentView.getLayoutParams().height = attitudeFragmentHeight;
-                    //Put attitudes into fragment
-                    attitudeFragment.init(attitudesToView, imageArea.getColor());
-                    //Init the view
+                if(attitudeFragmentView == null)
+                    attitudeFragmentView = attitudeFragment.getView();
+                if(attitudeFragmentView != null) {//Init the view
                     attitudeFragmentView.setX(0);
                     attitudeFragmentView.setY(layoutHeight);
                     attitudeFragmentView.bringToFront();
@@ -361,33 +360,32 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
                 if (groupId == 100)
                     currentGroupName = "Tête";
                 else if(groupId == 103)
-                    currentGroupName = null;
+                    currentGroupName = "";
             }
 
             //Animation
-            ObjectAnimator translatePrevious = null, hidePrevious = null, viewNext = null, translateNext = null;
+            ObjectAnimator translatePrevious, hidePrevious, viewNext, translateNext;
+            //Hide attitude fragment
             if (attitudeFragmentVisible != null) {
+                ViewCompat.setElevation(attitudeFragmentVisible.getView(), ELEVATION_ATTITUDES);
                 //Translate to the bottom then hide
                 translatePrevious = ObjectAnimator.ofFloat(attitudeFragmentVisible.getView(), "translationY", layoutHeight);
                 translatePrevious.setDuration(Settings.getAnimationSpeed());
                 hidePrevious = ObjectAnimator.ofInt(attitudeFragmentVisible.getView(), "visibility", View.GONE);
                 hidePrevious.setDuration(0);
+                animations.play(translatePrevious);
+                animations.play(hidePrevious).after(translatePrevious);
             }
+            //Show attitude fragment
             if (attitudeFragment != null) {
+                ViewCompat.setElevation(attitudeFragmentView, ELEVATION_ATTITUDES_ABOVE);
                 //Translate to the top
                 viewNext = ObjectAnimator.ofInt(attitudeFragmentView, "visibility", View.VISIBLE);
                 viewNext.setDuration(0);
                 translateNext = ObjectAnimator.ofFloat(attitudeFragmentView, "translationY", layoutHeight, splitY);
                 translateNext.setDuration(Settings.getAnimationSpeed());
-            }
-
-            if (translateNext != null) {//Show Next
                 animations.play(viewNext);
                 animations.play(translateNext).after(viewNext);
-            }
-            if (translatePrevious != null) {//Hide Previous
-                animations.play(translatePrevious);
-                animations.play(hidePrevious).after(translatePrevious);
             }
 
             //Save new state
@@ -405,10 +403,6 @@ public class SynergologyActivity extends BaseActivity implements View.OnLayoutCh
         Attitude attitude = Data.getDataById(attitudes, view.getId());
         if(attitude != null)
             if(attitude.hasBooka_page())
-                Tools.toast(this, String.format(toast_booka, attitude.getBooka_page()));
-    }
-
-    private boolean hasPrevious(){
-        return (currentImageArea != null) && (currentImageArea.getId() != 103);
+                Tools.toast(mainActivity, String.format(toast_booka, attitude.getBooka_page()));
     }
 }

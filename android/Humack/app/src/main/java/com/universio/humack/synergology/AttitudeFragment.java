@@ -11,7 +11,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.universio.humack.BaseActivity;
+import com.universio.humack.MainActivity;
 import com.universio.humack.R;
 import com.universio.humack.synergology.data.Attitude;
 
@@ -20,8 +20,9 @@ import java.util.ArrayList;
 /**
  * Created by Cyril Humbertclaude on 19/05/2015.
  */
-public class AttitudeFragment extends Fragment{
+public class AttitudeFragment extends Fragment implements View.OnClickListener{
 
+    private OnInteractionListener interactionListener;
     private LayoutInflater inflater;
 
     /**
@@ -44,11 +45,15 @@ public class AttitudeFragment extends Fragment{
         return inflater.inflate(R.layout.fragment_attitude, container, false);
     }
 
+    public void setListener(OnInteractionListener interactionListener){
+        this.interactionListener = interactionListener;
+    }
+
     /**
      * Show a group of attitudes
      * @param attitudes The attitudes
      */
-    public void init(ArrayList<Attitude> attitudes, int bandColor){
+    public void init(ArrayList<Attitude> attitudes){
         LinearLayout attitudeView;
         ImageView micromovementView;
         TextView descriptionView, meaningView;
@@ -65,17 +70,12 @@ public class AttitudeFragment extends Fragment{
             int rootWidth, spacing, usableSpace, attitudeColumnWidth, meaningColumnWidth;
             thisView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
             rootWidth = thisView.getLayoutParams().width;
-            spacing = BaseActivity.DEFAULT_SPACING * 3;
+            spacing = MainActivity.DEFAULT_SPACING * 3;
             usableSpace = rootWidth - spacing;
             attitudeColumnWidth = (int) Math.floor(usableSpace / 2.5);
             meaningColumnWidth = usableSpace - attitudeColumnWidth;
             attitudeTable.findViewById(R.id.fragment_attitude_header_attitude).getLayoutParams().width = attitudeColumnWidth;
             attitudeTable.findViewById(R.id.fragment_attitude_header_meaning).getLayoutParams().width = meaningColumnWidth;
-
-            //Band of color
-            TableRow tableBand;
-            tableBand = (TableRow) attitudeTable.findViewById(R.id.fragment_attitude_band);
-            tableBand.setBackgroundColor(bandColor);
 
             //Style
             int oddBackgroundColor = getResources().getColor(R.color.table_row_odd_background);
@@ -122,9 +122,33 @@ public class AttitudeFragment extends Fragment{
                     attitudeRow.setBackgroundColor(oddBackgroundColor);
                 odd = !odd;
 
+                //Clique
+                attitudeRow.setOnClickListener(this);
+
                 //Add the row to table
                 attitudesTableData.addView(attitudeRow);
             }
         }
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param view The view that was clicked.
+     */
+    @Override
+    public void onClick(View view) {
+        interactionListener.onAttitudeClick(view);
+    }
+
+    /**
+     * Interface for interaction from AttitudeFragment to its activity
+     */
+    public interface OnInteractionListener {
+        /**
+         * A click on an attitude
+         * @param view The View row clicked
+         */
+        void onAttitudeClick(View view);
     }
 }
