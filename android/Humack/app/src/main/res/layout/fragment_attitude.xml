@@ -1,0 +1,52 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    android:background="@color/fragment_attitude_background"
+    android:id="@+id/fragment_attitude">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_attitude_table">
+
+        <TableRow
+            android:minHeight="12dp"
+            android:background="#757575"
+            android:id="@+id/fragment_attitude_band">
+        </TableRow>
+
+        <TableRow
+            android:minHeight="40dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:background="@color/table_header_background" >
+
+            <TextView
+                android:id="@+id/fragment_attitude_header_attitude"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/fragment_attitude_table_header_attitude"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/fragment_attitude_header_meaning"
+                android:layout_marginLeft="16dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/fragment_attitude_table_header_meaning"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/fragment_attitude_table_data">
+
+            </TableLayout>
+        </ScrollView>
+    </TableLayout>
+</FrameLayout>

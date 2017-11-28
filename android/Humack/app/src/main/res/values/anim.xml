@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="animation_speed_min">200</integer>
+    <integer name="animation_speed_max">800</integer>
+    <integer name="animation_speed_default">500</integer>
+</resources>

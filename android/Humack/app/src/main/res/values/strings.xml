@@ -1,0 +1,70 @@
+<resources>
+    <!-- General -->
+    <string name="app_name">Humack</string>
+    <string name="app_version">Version 0.0.1</string>
+    <string name="app_icon_description">Icône de l\'application</string>
+    <string name="app_description">Améliorez votre compréhension de l’être humain de façon simple, scientifique et technologique.&lt;br>&lt;br>Humack vise à réunir et interconnecté un ensemble de disciplines puissantes orientées sur la science de l’humain, tel que la synergologie, la morphopsychologie ou le profilage.&lt;br>&lt;br>Véritablement accessible aux plus néophytes, cette application vous fera découvrir des disciplines d’experts de façon intuitive.&lt;br>&lt;br>L’intérêt ? Booster vos relations, détecter des mensonges voir manipuler c’est à vous de décider, et tout cela furtivement !</string>
+    <string name="databases_dir">/data/data/com.universio.humack/databases/</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Paramètres</string>
+
+    <!-- Activity Main -->
+    <string name="title_activity_main">MainActivity</string>
+
+    <!-- Drawer -->
+    <string name="drawer_open">Tiroir ouvert</string>
+    <string name="drawer_close">Tiroir fermé</string>
+    <string-array name="drawer_menu_titles">
+        <item>Attitude</item>
+        <item>Glossaire</item>
+        <item>Paramètres</item>
+        <item>A propos</item>
+    </string-array>
+
+    <!-- Activity Synergology -->
+    <string name="title_activity_synergology">Attitude</string>
+    <string name="action_help_synergology">Aide</string>
+    <string name="synergology_toast_page_booka">En savoir plus dans le livre:\n\"La synergologie\" de Philippe Turchet, page %d</string>
+
+    <!-- Fragment Image -->
+    <string name="fragment_image_description">Image d\'un être humain</string>
+
+    <!-- Fragment Attitude -->
+    <string name="fragment_attitude_table_header_attitude">Attitude</string>
+    <string name="fragment_attitude_table_header_meaning">Sens</string>
+    <string name="fragment_attitude_row_micromovement_icon_description">Un micromouvement</string>
+
+    <!-- Activity Synergology Help -->
+    <string name="title_activity_synergology_help">La synergologie</string>
+    <string name="synergology_help_quote">« L’art de rétablir la vérité des Hommes via le décodage de leurs attitudes »</string>
+    <string name="synergology_help_definition">&lt;b>Définition&lt;/b>&lt;br>La synergologie est une discipline qui vise à observer puis analyser l’attitude d’une personne afin de comprendre qu’elle est sont véritable état d’esprit, celui-ci étant poussé dans la société à mettre des filtres entre lui et son interlocuteur pour être plus efficace.</string>
+    <string name="synergology_help_filter">&lt;b>Filtre&lt;/b>&lt;br>Comportement anormal de la personne, inconscient ou non, entraînant un mensonge ou silence permettant d’être plus efficace au quotidien.</string>
+    <string name="synergology_help_antidote">&lt;b>L’antidote&lt;/b>&lt;br>La synergologie annule ces filtres en analysant le comportement inconscient de la personne, majoritairement ses micromouvements.</string>
+    <string name="synergology_help_micromovement">&lt;b>Micromouvement&lt;/b>&lt;br>Geste auto adressé non conscients et subreptices, avec notamment :</string>
+    <string name="synergology_help_micromovement_caress">Caresse</string>
+    <string name="synergology_help_micromovement_fixedness">Fixation</string>
+    <string name="synergology_help_micromovement_itch">Démangeaison</string>
+    <string name="synergology_help_rules_title">Règles</string>
+    <string name="synergology_help_rules_observation_title"><u>Observation</u></string>
+    <string name="synergology_help_rules_observation">- Sauvegarder les gestes et leurs contextes uniquement&lt;br>- Oublier la synergologie&lt;br>- Patienter l’arrivée des informations inconnues&lt;br>- Changer sa façon de regarder et non pas l’autre</string>
+    <string name="synergology_help_rules_analysis_title"><u>Analyse</u></string>
+    <string name="synergology_help_rules_analysis">- Partir du point de vue général vers le particulier&lt;br>- Eviter tout jugement moral&lt;br>- Avoir de l’humilité car des erreurs d’analyse sont possibles&lt;br>- Evaluer l’autre autant que sois même</string>
+    <string name="synergology_help_rules_both">- Être silencieux&lt;br>- Considérer l’autre comme un partenaire</string>
+    <string name="synergology_help_learnmore_title">En savoir plus</string>
+    <string name="synergology_help_learnmore_website">Site Officiel</string>
+    <string name="synergology_help_learnmore_website_url">http://www.synergologie.org</string>
+    <string name="synergology_help_learnmore_books">Livres</string>
+    <string name="synergology_help_learnmore_books_url">https://www.google.fr/?gws_rd=ssl#q=la+synergologie+philippe+turchet&amp;tbm=shop</string>
+
+    <!-- Activity Glossary -->
+    <string name="title_activity_glossary">Glossaire</string>
+    <string name="glossary_header_term">Terme</string>
+    <string name="glossary_header_definition">Définition</string>
+
+    <!-- Activity Settings -->
+    <string name="title_activity_settings">Paramètres</string>
+    <string name="settings_animation_speed">Vitesse des animations</string>
+
+    <!-- Activity About -->
+    <string name="title_activity_about">A propos</string>
+</resources>
